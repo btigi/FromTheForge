@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 const string email = "";
 const string password = "";
@@ -37,6 +38,21 @@ const string QuestActive = "/api/quests/active";
 const string QuestAccept = "/api/quests/accept";
 const string QuestTurnIn = "/api/quests/turn-in";
 const string QuestAbandon = "/api/quests/abandon";
+const string DungeonStatusPath = "/api/dungeons/status";
+const string DungeonEnter = "/api/dungeons/enter";
+const string DungeonAdvance = "/api/dungeons/advance";
+const string DungeonLeave = "/api/dungeons/leave";
+const string GatheringSkills = "/api/gathering/skills";
+const string GatheringNodes = "/api/gathering/nodes";
+const string GatheringHarvest = "/api/gathering/harvest";
+const string CraftingSkills = "/api/crafting/skills";
+const string CraftingRecipes = "/api/crafting/recipes";
+const string CraftingStations = "/api/crafting/stations";
+const string CraftingCraft = "/api/crafting/craft";
+const string GameRaces = "/api/game/races";
+const string GameClasses = "/api/game/classes";
+const string GameItems = "/api/game/items";
+const string GameSpells = "/api/game/spells";
 
 var jsonString = "";
 
@@ -161,9 +177,44 @@ while (action != "q")
 			Console.WriteLine(travelCancelResponse);
 			break;
 		case "map":
+		{
+			static char MapTerrainChar(string t)
+			{
+				if (string.IsNullOrWhiteSpace(t)) 
+						return '_';
+				return t.Trim().ToLowerInvariant() switch
+				{
+					"ocean" => 'o',
+					"forest" => 'f',
+					"plains" => 'p',
+					"coast" => 'c',
+					"swamp" => 's',
+					"mountain" => 'm',
+					"desert" => 'd',
+					_ => '_'
+				};
+			}
+
 			var mapResponse = await Get<MapResponseDto>(Map, token);
-			Console.WriteLine(mapResponse);
+			if (mapResponse?.terrain != null)
+			{
+				foreach (var row in mapResponse.terrain)
+				{
+					if (row != null)
+					{
+						foreach (var cell in row)
+							Console.Write(MapTerrainChar(cell));
+					}
+					Console.WriteLine();
+				}
+			}
+			else
+				Console.WriteLine("(no terrain grid)");
+
+			if (mapResponse != null)
+				Console.WriteLine($"size {mapResponse.width}x{mapResponse.height}");
 			break;
+		}
 		case "regions":
 			var regionsResponse = await Get<Region[]>(Regions, token);
 			Console.WriteLine(regionsResponse);
@@ -362,6 +413,84 @@ while (action != "q")
 			var abandonQuestResponse = await Post<AbandonQuestResponse>(jsonString, QuestAbandon, token);
 			Console.WriteLine(abandonQuestResponse);
 			break;
+		case "dungeonstatus":
+			var dungeonStatusResponse = await Get<DungeonStatus>(DungeonStatusPath, token);
+			Console.WriteLine(dungeonStatusResponse);
+			break;
+		case "dungeonenter":
+			Console.WriteLine("poiId");
+			var dungeonPoiId = Console.ReadLine();
+			var enterDungeon = new EnterDungeon();
+			enterDungeon.poiId = dungeonPoiId;
+			jsonString = JsonSerializer.Serialize(enterDungeon, options);
+			var enterDungeonResponse = await Post<DungeonStatus>(jsonString, DungeonEnter, token);
+			Console.WriteLine(enterDungeonResponse);
+			break;
+		case "dungeonadvance":
+			var dungeonAdvanceResponse = await Post<DungeonAdvanceResponse>(string.Empty, DungeonAdvance, token);
+			Console.WriteLine(dungeonAdvanceResponse);
+			break;
+		case "dungeonleave":
+			var dungeonLeaveResponse = await Post<DungeonLeaveResponse>(string.Empty, DungeonLeave, token);
+			Console.WriteLine(dungeonLeaveResponse);
+			break;
+		case "gatheringskills":
+			var gatheringSkillsResponse = await Get<GatheringSkillsResponse>(GatheringSkills, token);
+			Console.WriteLine(gatheringSkillsResponse);
+			break;
+		case "gatheringnodes":
+			var gatheringNodesResponse = await Get<GatheringNodesResponse>(GatheringNodes, token);
+			Console.WriteLine(gatheringNodesResponse);
+			break;
+		case "gatheringharvest":
+			Console.WriteLine("nodeId");
+			var harvestNodeId = Console.ReadLine();
+			var harvest = new Harvest();
+			harvest.nodeId = harvestNodeId;
+			jsonString = JsonSerializer.Serialize(harvest, options);
+			var harvestResponse = await Post<HarvestResponse>(jsonString, GatheringHarvest, token);
+			Console.WriteLine(harvestResponse);
+			break;
+		case "craftingskills":
+			var craftingSkillsResponse = await Get<CraftingSkillsResponse>(CraftingSkills, token);
+			Console.WriteLine(craftingSkillsResponse);
+			break;
+		case "craftingrecipes":
+			Console.WriteLine("skill filter (blacksmithing, alchemy, woodworking, blank for all)");
+			var craftingSkillFilter = Console.ReadLine();
+			var recipesUrl = string.IsNullOrWhiteSpace(craftingSkillFilter) ? CraftingRecipes : $"{CraftingRecipes}?skill={craftingSkillFilter}";
+			var craftingRecipesResponse = await Get<CraftingRecipesResponse>(recipesUrl, token);
+			Console.WriteLine(craftingRecipesResponse);
+			break;
+		case "craftingstations":
+			var craftingStationsResponse = await Get<CraftingStationsResponse>(CraftingStations, token);
+			Console.WriteLine(craftingStationsResponse);
+			break;
+		case "craftingcraft":
+			Console.WriteLine("recipeId");
+			var recipeId = Console.ReadLine();
+			var craft = new Craft();
+			craft.recipeId = recipeId;
+			jsonString = JsonSerializer.Serialize(craft, options);
+			var craftResponse = await Post<CraftResponse>(jsonString, CraftingCraft, token);
+			Console.WriteLine(craftResponse);
+			break;
+		case "gameraces":
+			var gameRacesResponse = await Get<GameRace[]>(GameRaces, token);
+			Console.WriteLine(gameRacesResponse);
+			break;
+		case "gameclasses":
+			var gameClassesResponse = await Get<GameClass[]>(GameClasses, token);
+			Console.WriteLine(gameClassesResponse);
+			break;
+		case "gameitems":
+			var gameItemsResponse = await Get<GameItemDef[]>(GameItems, token);
+			Console.WriteLine(gameItemsResponse);
+			break;
+		case "gamespells":
+			var gameSpellsResponse = await Get<GameSpellDef[]>(GameSpells, token);
+			Console.WriteLine(gameSpellsResponse);
+			break;
 	}
 	action = Console.ReadLine();
 }
@@ -396,7 +525,8 @@ async Task<T> Get<T>(string endpoint, string token = "")
 	try
 	{
 		using var client = new HttpClient { BaseAddress = new Uri("https://forgebound.io") };
-		client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+		if (!string.IsNullOrEmpty(token))
+			client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 		var response = await client.GetAsync(endpoint);
 		var body = await response.Content.ReadAsStringAsync();
 		return JsonSerializer.Deserialize<T>(body, jsonReadOptions);
@@ -1338,4 +1468,263 @@ public class AbandonQuest
 public class AbandonQuestResponse
 {
 	public string message { get; set; }
+}
+
+public class EnterDungeon
+{
+	public string poiId { get; set; }
+}
+
+public class DungeonRoom
+{
+	public int index { get; set; }
+	public string type { get; set; }
+	public bool cleared { get; set; }
+	public string[] log { get; set; }
+}
+
+public class DungeonStatus
+{
+	public bool inDungeon { get; set; }
+	public string dungeonId { get; set; }
+	public string poiId { get; set; }
+	public string poiName { get; set; }
+	public int dungeonLevel { get; set; }
+	public int currentRoom { get; set; }
+	public int totalRooms { get; set; }
+	public bool completed { get; set; }
+	public DungeonRoom[] rooms { get; set; }
+}
+
+public class DungeonAdvanceMonster
+{
+	public string name { get; set; }
+	public int level { get; set; }
+	public int hp { get; set; }
+	public int maxHp { get; set; }
+	public string type { get; set; }
+}
+
+public class DungeonAdvanceResponse
+{
+	public int roomIndex { get; set; }
+	public string roomType { get; set; }
+	public string status { get; set; }
+	public string message { get; set; }
+	public DungeonAdvanceMonster monster { get; set; }
+	public string trapType { get; set; }
+	public bool avoided { get; set; }
+	public int gold { get; set; }
+	public QuestRewardItem[] loot { get; set; }
+	public int hp { get; set; }
+	public int maxHp { get; set; }
+	public int mana { get; set; }
+	public int maxMana { get; set; }
+	public RestRecoveryAmount recovered { get; set; }
+	public string[] log { get; set; }
+}
+
+public class DungeonLeaveResponse
+{
+	public bool left { get; set; }
+	public string message { get; set; }
+	public Position position { get; set; }
+}
+
+public class GatheringSkillsResponse
+{
+	public GatheringSkillsDetail skills { get; set; }
+}
+
+public class GatheringSkillsDetail
+{
+	public GatheringSkillEntry mining { get; set; }
+	public GatheringSkillEntry herbalism { get; set; }
+	public GatheringSkillEntry woodcutting { get; set; }
+}
+
+public class GatheringSkillEntry
+{
+	public int level { get; set; }
+	public int xp { get; set; }
+	public int? xpToNext { get; set; }
+}
+
+public class GatheringNodesResponse
+{
+	public Position position { get; set; }
+	public GatheringNode[] nodes { get; set; }
+}
+
+public class GatheringNode
+{
+	public string poiId { get; set; }
+	public string name { get; set; }
+	public string type { get; set; }
+	public string nodeId { get; set; }
+	public string skill { get; set; }
+	public int minLevel { get; set; }
+	public int xpReward { get; set; }
+	public int cooldownMinutes { get; set; }
+	public bool ready { get; set; }
+	public DateTime? availableAt { get; set; }
+}
+
+public class Harvest
+{
+	public string nodeId { get; set; }
+}
+
+public class HarvestResponse
+{
+	public string harvested { get; set; }
+	public string itemId { get; set; }
+	public int quantity { get; set; }
+	public int xpGained { get; set; }
+	public string skill { get; set; }
+	public int skillLevel { get; set; }
+	public int skillXp { get; set; }
+	public int cooldownMinutes { get; set; }
+	public DateTime availableAt { get; set; }
+	public HarvestLevelUp levelUp { get; set; }
+}
+
+public class HarvestLevelUp
+{
+	public int newLevel { get; set; }
+	public string skill { get; set; }
+}
+
+public class CraftingSkillsResponse
+{
+	public CraftingSkillsDetail skills { get; set; }
+}
+
+public class CraftingSkillsDetail
+{
+	public CraftingSkillEntry blacksmithing { get; set; }
+	public CraftingSkillEntry alchemy { get; set; }
+	public CraftingSkillEntry woodworking { get; set; }
+}
+
+public class CraftingSkillEntry
+{
+	public int level { get; set; }
+	public int xp { get; set; }
+	public int? xpToNext { get; set; }
+}
+
+public class CraftingRecipesResponse
+{
+	public CraftingRecipe[] recipes { get; set; }
+}
+
+public class CraftingRecipe
+{
+	public string id { get; set; }
+	public string name { get; set; }
+	public string skill { get; set; }
+	public int minLevel { get; set; }
+	public int xpReward { get; set; }
+	public CraftingIngredient[] ingredients { get; set; }
+	public CraftingOutput output { get; set; }
+	public bool meetsLevel { get; set; }
+	public bool hasIngredients { get; set; }
+	public bool canCraft { get; set; }
+}
+
+public class CraftingIngredient
+{
+	public string itemId { get; set; }
+	public int quantity { get; set; }
+	public int have { get; set; }
+}
+
+public class CraftingOutput
+{
+	public string itemId { get; set; }
+	public int quantity { get; set; }
+}
+
+public class CraftingStationsResponse
+{
+	public Position position { get; set; }
+	public CraftingStation[] stations { get; set; }
+}
+
+public class CraftingStation
+{
+	public string id { get; set; }
+	public string name { get; set; }
+	public string type { get; set; }
+	public string skill { get; set; }
+	public string description { get; set; }
+}
+
+public class Craft
+{
+	public string recipeId { get; set; }
+}
+
+public class CraftResponse
+{
+	public string crafted { get; set; }
+	public string itemId { get; set; }
+	public int quantity { get; set; }
+	public int xpGained { get; set; }
+	public string skill { get; set; }
+	public int skillLevel { get; set; }
+	public int skillXp { get; set; }
+	public HarvestLevelUp levelUp { get; set; }
+}
+
+public class GameRace
+{
+	public string id { get; set; }
+	public string name { get; set; }
+	public string description { get; set; }
+	public JsonElement? bonuses { get; set; }
+}
+
+public class GameClass
+{
+	public string id { get; set; }
+	public string name { get; set; }
+	public string description { get; set; }
+	public int hitDie { get; set; }
+	public string primaryStat { get; set; }
+}
+
+public class GameItemDef
+{
+	public string id { get; set; }
+	public string name { get; set; }
+	public string type { get; set; }
+	public string rarity { get; set; }
+	public int? damage_min { get; set; }
+	public int? damage_max { get; set; }
+	public int armor { get; set; }
+	public int value { get; set; }
+	public double weight { get; set; }
+	public int level_req { get; set; }
+	public string class_req { get; set; }
+	public JsonElement? statusEffect { get; set; }
+	public double? statusChance { get; set; }
+}
+
+public class GameSpellDef
+{
+	public string id { get; set; }
+	public string name { get; set; }
+	[JsonPropertyName("class")]
+	public string spellClass { get; set; }
+	public int level_req { get; set; }
+	public int mana_cost { get; set; }
+	public string targetType { get; set; }
+	public string effectType { get; set; }
+	public double effectValue { get; set; }
+	public string damageType { get; set; }
+	public int cooldown { get; set; }
+	public string description { get; set; }
+	public JsonElement? statusEffect { get; set; }
 }
