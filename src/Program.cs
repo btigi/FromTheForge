@@ -28,7 +28,7 @@ var token = string.Empty;
 
 var commands = new Dictionary<string, (string Help, Func<Task> Run)>(StringComparer.OrdinalIgnoreCase);
 
-commands["r"] = ("Register account (built-in email/password)", async () =>
+commands["r"] = ("Register account", async () =>
 {
 	var register = new RegisterDto();
 	register.Email = email;
@@ -63,7 +63,7 @@ commands["me"] = ("Get authenticated profile", async () =>
 }
 );
 
-commands["create"] = ("Create character (prompts name, race, class, stats)", async () =>
+commands["create"] = ("Create character", async () =>
 {
 	Console.WriteLine("Name");
 	var name = Console.ReadLine();
@@ -110,7 +110,7 @@ commands["get"] = ("Get my character", async () =>
 
 commands["allocate"] = ("Placeholder: allocate stat point on level up", async () =>
 {
-	Console.WriteLine("allocate a stat point (gained on level up)");
+	Console.WriteLine("Allocate a stat point (gained on level up)");
 }
 );
 
@@ -164,16 +164,18 @@ commands["map"] = ("Get world map", async () =>
 		{
 			if (row != null)
 			{
+				var existingColour = Console.ForegroundColor;
 				foreach (var cell in row)
-					Console.Write(TerrainGlyph.FromTerrain(cell));
+				{
+					var terrainInfo = TerrainGlyph.FromTerrain(cell);
+					Console.ForegroundColor = terrainInfo.Item2;
+					Console.Write(terrainInfo.Item1);
+				}
+				Console.ForegroundColor = existingColour;
 			}
 			Console.WriteLine();
 		}
 	}
-	else
-		Console.WriteLine("(no terrain grid)");
-	if (mapResponse != null)
-		Console.WriteLine($"size {mapResponse.width}x{mapResponse.height}");
 }
 );
 
@@ -202,7 +204,7 @@ commands["combatstatus"] = ("Get combat status", async () =>
 }
 );
 
-commands["combataction"] = ("POST combat action (attack, cast, use_item, flee)", async () =>
+commands["combataction"] = ("Combat action (attack, cast, use_item, flee)", async () =>
 {
 	Console.WriteLine("action");
 	Console.WriteLine("  attack, cast, use_item, flee");
@@ -220,7 +222,7 @@ commands["inventory"] = ("Get inventory", async () =>
 }
 );
 
-commands["pickup"] = ("Pick up item (itemid, quantity)", async () =>
+commands["pickup"] = ("Pick up an item", async () =>
 {
 	Console.WriteLine("itemid");
 	var itemid = Console.ReadLine();
@@ -235,7 +237,7 @@ commands["pickup"] = ("Pick up item (itemid, quantity)", async () =>
 }
 );
 
-commands["drop"] = ("Drop item", async () =>
+commands["drop"] = ("Drop an item", async () =>
 {
 	Console.WriteLine("itemid");
 	var itemidDropped = Console.ReadLine();
@@ -250,7 +252,7 @@ commands["drop"] = ("Drop item", async () =>
 }
 );
 
-commands["equip"] = ("Equip item to slot", async () =>
+commands["equip"] = ("Equip an item", async () =>
 {
 	Console.WriteLine("itemid");
 	var itemidEquip = Console.ReadLine();
@@ -298,7 +300,7 @@ commands["spellbook"] = ("Get spellbook", async () =>
 }
 );
 
-commands["spelllearn"] = ("Learn spell (spellId)", async () =>
+commands["spelllearn"] = ("Learn spell", async () =>
 {
 	Console.WriteLine("spellId");
 	var learnSpellId = Console.ReadLine();
@@ -310,7 +312,7 @@ commands["spelllearn"] = ("Learn spell (spellId)", async () =>
 }
 );
 
-commands["spellcast"] = ("Cast spell out of combat (spellId)", async () =>
+commands["spellcast"] = ("Cast spell (out of combat)", async () =>
 {
 	Console.WriteLine("spellId");
 	var castSpellId = Console.ReadLine();
@@ -322,7 +324,7 @@ commands["spellcast"] = ("Cast spell out of combat (spellId)", async () =>
 }
 );
 
-commands["restcamp"] = ("Start camping (duration seconds 10-600)", async () =>
+commands["restcamp"] = ("Start camping", async () =>
 {
 	Console.WriteLine("duration seconds (10-600)");
 	var campDuration = Console.ReadLine();
@@ -334,7 +336,7 @@ commands["restcamp"] = ("Start camping (duration seconds 10-600)", async () =>
 }
 );
 
-commands["restinn"] = ("Rest at inn", async () =>
+commands["restinn"] = ("Rest at an inn", async () =>
 {
 	var innRestResponse = await Post<InnRestResponse>(string.Empty, Constants.RestInn, token);
 	Console.WriteLine(innRestResponse);
@@ -355,7 +357,7 @@ commands["reststop"] = ("Stop resting", async () =>
 }
 );
 
-commands["shop"] = ("Shop inventory (townId)", async () =>
+commands["shop"] = ("Shop inventory", async () =>
 {
 	Console.WriteLine("townId");
 	var shopTownId = Console.ReadLine();
@@ -364,7 +366,7 @@ commands["shop"] = ("Shop inventory (townId)", async () =>
 }
 );
 
-commands["shopbuy"] = ("Buy from shop", async () =>
+commands["shopbuy"] = ("Buy items", async () =>
 {
 	Console.WriteLine("townId");
 	var buyTownId = Console.ReadLine();
@@ -382,7 +384,7 @@ commands["shopbuy"] = ("Buy from shop", async () =>
 }
 );
 
-commands["shopsell"] = ("Sell to shop", async () =>
+commands["shopsell"] = ("Sell items", async () =>
 {
 	Console.WriteLine("townId");
 	var sellTownId = Console.ReadLine();
@@ -400,21 +402,21 @@ commands["shopsell"] = ("Sell to shop", async () =>
 }
 );
 
-commands["questavailable"] = ("Available quests at current town", async () =>
+commands["questavailable"] = ("List available quests (at current town)", async () =>
 {
 	var questAvailableResponse = await Get<AvailableQuestsResponse>(Constants.QuestAvailable, token);
 	Console.WriteLine(questAvailableResponse);
 }
 );
 
-commands["questactive"] = ("Active quests", async () =>
+commands["questactive"] = ("List active quests", async () =>
 {
 	var questActiveResponse = await Get<ActiveQuestsResponse>(Constants.QuestActive, token);
 	Console.WriteLine(questActiveResponse);
 }
 );
 
-commands["questaccept"] = ("Accept quest (questId)", async () =>
+commands["questaccept"] = ("Accept quest", async () =>
 {
 	Console.WriteLine("questId");
 	var acceptQuestId = Console.ReadLine();
@@ -426,7 +428,7 @@ commands["questaccept"] = ("Accept quest (questId)", async () =>
 }
 );
 
-commands["questturnin"] = ("Turn in quest (questId)", async () =>
+commands["questturnin"] = ("Complete a quest", async () =>
 {
 	Console.WriteLine("questId");
 	var turnInQuestId = Console.ReadLine();
@@ -438,7 +440,7 @@ commands["questturnin"] = ("Turn in quest (questId)", async () =>
 }
 );
 
-commands["questabandon"] = ("Abandon quest (questId)", async () =>
+commands["questabandon"] = ("Abandon a quest", async () =>
 {
 	Console.WriteLine("questId");
 	var abandonQuestId = Console.ReadLine();
@@ -457,7 +459,7 @@ commands["dungeonstatus"] = ("Dungeon status", async () =>
 }
 );
 
-commands["dungeonenter"] = ("Enter dungeon (poiId)", async () =>
+commands["dungeonenter"] = ("Enter dungeon", async () =>
 {
 	Console.WriteLine("poiId");
 	var dungeonPoiId = Console.ReadLine();
@@ -497,7 +499,7 @@ commands["gatheringnodes"] = ("Nearby gathering nodes", async () =>
 }
 );
 
-commands["gatheringharvest"] = ("Harvest node (nodeId)", async () =>
+commands["gatheringharvest"] = ("Harvest node", async () =>
 {
 	Console.WriteLine("nodeId");
 	var harvestNodeId = Console.ReadLine();
@@ -516,7 +518,7 @@ commands["craftingskills"] = ("Crafting skill levels", async () =>
 }
 );
 
-commands["craftingrecipes"] = ("Crafting recipes (optional skill filter)", async () =>
+commands["craftingrecipes"] = ("Crafting recipes", async () =>
 {
 	Console.WriteLine("skill filter (blacksmithing, alchemy, woodworking, blank for all)");
 	var craftingSkillFilter = Console.ReadLine();
@@ -533,7 +535,7 @@ commands["craftingstations"] = ("Nearby crafting stations", async () =>
 }
 );
 
-commands["craftingcraft"] = ("Craft item (recipeId)", async () =>
+commands["craftingcraft"] = ("Craft item", async () =>
 {
 	Console.WriteLine("recipeId");
 	var recipeId = Console.ReadLine();
@@ -656,20 +658,20 @@ async Task<T> Get<T>(string endpoint, string token = "")
 
 file static class TerrainGlyph
 {
-	public static char FromTerrain(string t)
+	public static (string, ConsoleColor) FromTerrain(string t)
 	{
 		if (string.IsNullOrWhiteSpace(t))
-			return '_';
+			return ("__", ConsoleColor.Gray);
 		return t.Trim().ToLowerInvariant() switch
 		{
-			"ocean" => 'o',
-			"forest" => 'f',
-			"plains" => 'p',
-			"coast" => 'c',
-			"swamp" => 's',
-			"mountain" => 'm',
-			"desert" => 'd',
-			_ => '_'
+			"ocean" => ("oo", ConsoleColor.DarkBlue),
+			"forest" => ("ff", ConsoleColor.DarkGreen),
+			"plains" => ("pp", ConsoleColor.Green),
+			"coast" => ("cc", ConsoleColor.Blue),
+			"swamp" => ("ss", ConsoleColor.Magenta),
+			"mountain" => ("mm", ConsoleColor.DarkYellow),
+			"desert" => ("dd", ConsoleColor.Yellow),
+			_ => ("__", ConsoleColor.Gray)
 		};
 	}
 }
