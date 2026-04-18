@@ -39,7 +39,7 @@ commands["r"] = ("Register account (built-in email/password)", async () =>
 }
 );
 
-commands["l"] = ("Login; stores bearer token", async () =>
+commands["l"] = ("Login", async () =>
 {
 	var login = new LoginDto();
 	login.Email = email;
@@ -104,7 +104,7 @@ commands["create"] = ("Create character (prompts name, race, class, stats)", asy
 commands["get"] = ("Get my character", async () =>
 {
 	var getCharacterResponse = await Get<Character>(Constants.GetCharacter, token);
-	Console.WriteLine(getCharacterResponse);
+	Console.WriteLine(getCharacterResponse.name);
 }
 );
 
@@ -155,7 +155,7 @@ commands["travelcancel"] = ("Cancel active travel", async () =>
 }
 );
 
-commands["map"] = ("Fetch world map; print terrain grid + size", async () =>
+commands["map"] = ("Get world map", async () =>
 {
 	var mapResponse = await Get<MapResponseDto>(Constants.Map, token);
 	if (mapResponse?.terrain != null)
