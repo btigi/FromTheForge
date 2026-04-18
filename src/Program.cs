@@ -1,9 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
 
-const string email = "";
-const string password = "";
-
 var jsonString = "";
 
 var options = new JsonSerializerOptions
@@ -30,9 +27,22 @@ var commands = new Dictionary<string, (string Help, Func<Task> Run)>(StringCompa
 
 commands["r"] = ("Register account", async () =>
 {
+	var registerEmail = Environment.GetEnvironmentVariable("FromTheForge_Username")?.Trim();
+	if (string.IsNullOrWhiteSpace(registerEmail))
+	{
+		Console.WriteLine("Email");
+		registerEmail = Console.ReadLine();
+	}
+	var registerPassword = Environment.GetEnvironmentVariable("FromTheForge_Password")?.Trim();
+	if (string.IsNullOrWhiteSpace(registerPassword))
+	{
+		Console.WriteLine("Password");
+		registerPassword = Console.ReadLine();
+	}
+
 	var register = new RegisterDto();
-	register.Email = email;
-	register.Password = password;
+	register.Email = registerEmail;
+	register.Password = registerPassword;
 	jsonString = JsonSerializer.Serialize(register, options);
 	var registerResponse = await Post<RegisterResponseDto>(jsonString, Constants.Register);
 	Console.WriteLine(registerResponse);
@@ -41,9 +51,21 @@ commands["r"] = ("Register account", async () =>
 
 commands["l"] = ("Login", async () =>
 {
+	var loginEmail = Environment.GetEnvironmentVariable("FromTheForge_Username")?.Trim();
+	if (string.IsNullOrWhiteSpace(loginEmail))
+	{
+		Console.WriteLine("Email");
+		loginEmail = Console.ReadLine();
+	}
+	var loginPassword = Environment.GetEnvironmentVariable("FromTheForge_Password")?.Trim();
+	if (string.IsNullOrWhiteSpace(loginPassword))
+	{
+		Console.WriteLine("Password");
+		loginPassword = Console.ReadLine();
+	}
 	var login = new LoginDto();
-	login.Email = email;
-	login.Password = password;
+	login.Email = loginEmail;
+	login.Password = loginPassword;
 	jsonString = JsonSerializer.Serialize(login, options);
 	var loginResponse = await Post<LoginResponseDto>(jsonString, Constants.Login);
 	if (!string.IsNullOrEmpty(loginResponse.Error))
@@ -103,8 +125,13 @@ commands["create"] = ("Create character", async () =>
 
 commands["get"] = ("Get my character", async () =>
 {
-	var getCharacterResponse = await Get<Character>(Constants.GetCharacter, token);
-	Console.WriteLine(getCharacterResponse.name);
+	var character = await Get<Character>(Constants.GetCharacter, token);
+	if (character == null)
+	{
+		Console.WriteLine("(No character / request failed)");
+		return;
+	}
+	Console.WriteLine(JsonSerializer.Serialize(character, options));
 }
 );
 
@@ -218,7 +245,12 @@ commands["combataction"] = ("Combat action (attack, cast, use_item, flee)", asyn
 commands["inventory"] = ("Get inventory", async () =>
 {
 	var inventoryResponse = await Get<Inventory>(Constants.Inventory, token);
-	Console.WriteLine(inventoryResponse);
+	if (inventoryResponse == null)
+	{
+		Console.WriteLine("(No inventory / request failed)");
+		return;
+	}
+	Console.WriteLine(JsonSerializer.Serialize(inventoryResponse, options));
 }
 );
 

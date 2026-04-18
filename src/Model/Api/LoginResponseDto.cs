@@ -6,6 +6,6 @@
 	public User User { get; set; }
 
 	public string Error { get; set; }
-	public string Message { get; set; }
+	public string[] Message { get; set; }
 	public int StatusCode { get; set; }
 }
