@@ -24,6 +24,19 @@ const string Drop = "/api/inventory/drop";
 const string Equip = "/api/inventory/equip";
 const string Unequip = "/api/inventory/unequip";
 const string Use = "/api/inventory/use";
+const string Spells = "/api/spells";
+const string SpellsLearn = "/api/spells/learn";
+const string SpellsCast = "/api/spells/cast";
+const string RestCamp = "/api/rest/camp";
+const string RestInn = "/api/rest/inn";
+const string RestStatusPath = "/api/rest/status";
+const string RestStop = "/api/rest/stop";
+const string Shops = "/api/shops";
+const string QuestAvailable = "/api/quests/available";
+const string QuestActive = "/api/quests/active";
+const string QuestAccept = "/api/quests/accept";
+const string QuestTurnIn = "/api/quests/turn-in";
+const string QuestAbandon = "/api/quests/abandon";
 
 var jsonString = "";
 
@@ -234,6 +247,120 @@ while (action != "q")
 			jsonString = JsonSerializer.Serialize(use, options);
 			var useResponse = await Post<UseResponse>(jsonString, Use, token);
 			Console.WriteLine(useResponse);
+			break;
+		case "spellbook":
+			var spellbookResponse = await Get<SpellbookResponse>(Spells, token);
+			Console.WriteLine(spellbookResponse);
+			break;
+		case "spelllearn":
+			Console.WriteLine("spellId");
+			var learnSpellId = Console.ReadLine();
+			var learnSpell = new LearnSpell();
+			learnSpell.spellId = learnSpellId;
+			jsonString = JsonSerializer.Serialize(learnSpell, options);
+			var learnSpellResponse = await Post<LearnSpellResponse>(jsonString, SpellsLearn, token);
+			Console.WriteLine(learnSpellResponse);
+			break;
+		case "spellcast":
+			Console.WriteLine("spellId");
+			var castSpellId = Console.ReadLine();
+			var castSpell = new CastSpell();
+			castSpell.spellId = castSpellId;
+			jsonString = JsonSerializer.Serialize(castSpell, options);
+			var castSpellResponse = await Post<CastSpellResponse>(jsonString, SpellsCast, token);
+			Console.WriteLine(castSpellResponse);
+			break;
+		case "restcamp":
+			Console.WriteLine("duration seconds (10-600)");
+			var campDuration = Console.ReadLine();
+			var startCamp = new StartCampRequest();
+			startCamp.duration = Convert.ToInt32(campDuration);
+			jsonString = JsonSerializer.Serialize(startCamp, options);
+			var startCampResponse = await Post<StartCampResponse>(jsonString, RestCamp, token);
+			Console.WriteLine(startCampResponse);
+			break;
+		case "restinn":
+			var innRestResponse = await Post<InnRestResponse>(string.Empty, RestInn, token);
+			Console.WriteLine(innRestResponse);
+			break;
+		case "reststatus":
+			var restStatusResponse = await Get<RestStatus>(RestStatusPath, token);
+			Console.WriteLine(restStatusResponse);
+			break;
+		case "reststop":
+			var stopRestResponse = await Post<StopRestResponse>(string.Empty, RestStop, token);
+			Console.WriteLine(stopRestResponse);
+			break;
+		case "shop":
+			Console.WriteLine("townId");
+			var shopTownId = Console.ReadLine();
+			var shopResponse = await Get<ShopResponse>($"{Shops}/{shopTownId}", token);
+			Console.WriteLine(shopResponse);
+			break;
+		case "shopbuy":
+			Console.WriteLine("townId");
+			var buyTownId = Console.ReadLine();
+			Console.WriteLine("itemId");
+			var buyItemId = Console.ReadLine();
+			Console.WriteLine("quantity");
+			var buyQtyLine = Console.ReadLine();
+			var buyQty = string.IsNullOrWhiteSpace(buyQtyLine) ? 1 : Convert.ToInt32(buyQtyLine);
+			var buyItem = new BuyItem();
+			buyItem.itemId = buyItemId;
+			buyItem.quantity = buyQty;
+			jsonString = JsonSerializer.Serialize(buyItem, options);
+			var buyResponse = await Post<BuyItemResponse>(jsonString, $"{Shops}/{buyTownId}/buy", token);
+			Console.WriteLine(buyResponse);
+			break;
+		case "shopsell":
+			Console.WriteLine("townId");
+			var sellTownId = Console.ReadLine();
+			Console.WriteLine("itemId");
+			var sellItemId = Console.ReadLine();
+			Console.WriteLine("quantity");
+			var sellQtyLine = Console.ReadLine();
+			var sellQty = string.IsNullOrWhiteSpace(sellQtyLine) ? 1 : Convert.ToInt32(sellQtyLine);
+			var sellItem = new SellItem();
+			sellItem.itemId = sellItemId;
+			sellItem.quantity = sellQty;
+			jsonString = JsonSerializer.Serialize(sellItem, options);
+			var sellResponse = await Post<SellItemResponse>(jsonString, $"{Shops}/{sellTownId}/sell", token);
+			Console.WriteLine(sellResponse);
+			break;
+		case "questavailable":
+			var questAvailableResponse = await Get<AvailableQuestsResponse>(QuestAvailable, token);
+			Console.WriteLine(questAvailableResponse);
+			break;
+		case "questactive":
+			var questActiveResponse = await Get<ActiveQuestsResponse>(QuestActive, token);
+			Console.WriteLine(questActiveResponse);
+			break;
+		case "questaccept":
+			Console.WriteLine("questId");
+			var acceptQuestId = Console.ReadLine();
+			var acceptQuest = new AcceptQuest();
+			acceptQuest.questId = acceptQuestId;
+			jsonString = JsonSerializer.Serialize(acceptQuest, options);
+			var acceptQuestResponse = await Post<AcceptQuestResponse>(jsonString, QuestAccept, token);
+			Console.WriteLine(acceptQuestResponse);
+			break;
+		case "questturnin":
+			Console.WriteLine("questId");
+			var turnInQuestId = Console.ReadLine();
+			var turnInQuest = new TurnInQuest();
+			turnInQuest.questId = turnInQuestId;
+			jsonString = JsonSerializer.Serialize(turnInQuest, options);
+			var turnInQuestResponse = await Post<TurnInQuestResponse>(jsonString, QuestTurnIn, token);
+			Console.WriteLine(turnInQuestResponse);
+			break;
+		case "questabandon":
+			Console.WriteLine("questId");
+			var abandonQuestId = Console.ReadLine();
+			var abandonQuest = new AbandonQuest();
+			abandonQuest.questId = abandonQuestId;
+			jsonString = JsonSerializer.Serialize(abandonQuest, options);
+			var abandonQuestResponse = await Post<AbandonQuestResponse>(jsonString, QuestAbandon, token);
+			Console.WriteLine(abandonQuestResponse);
 			break;
 	}
 	action = Console.ReadLine();
@@ -931,4 +1058,284 @@ public class UseResponse
 	public int mana { get; set; }
 	public int maxMana { get; set; }
 	public string learned { get; set; }
+}
+
+public class SpellbookResponse
+{
+	public int mana { get; set; }
+	public int maxMana { get; set; }
+	public KnownSpell[] spells { get; set; }
+}
+
+public class KnownSpell
+{
+	public string id { get; set; }
+	public string name { get; set; }
+	public string school { get; set; }
+	public int spell_level { get; set; }
+	public int mana_cost { get; set; }
+}
+
+public class LearnSpell
+{
+	public string spellId { get; set; }
+}
+
+public class LearnSpellResponse
+{
+	public string learned { get; set; }
+	public string message { get; set; }
+	public KnownSpell spell { get; set; }
+}
+
+public class CastSpell
+{
+	public string spellId { get; set; }
+}
+
+public class CastSpellResponse
+{
+	public string cast { get; set; }
+	public int manaCost { get; set; }
+	public Effect effect { get; set; }
+	public string result { get; set; }
+}
+
+public class StartCampRequest
+{
+	public int? duration { get; set; }
+}
+
+public class StartCampResponse
+{
+	public bool resting { get; set; }
+	public string type { get; set; }
+	public int durationSeconds { get; set; }
+	public DateTime startedAt { get; set; }
+	public DateTime until { get; set; }
+	public Position position { get; set; }
+	public RestRecoveryAmount willRecover { get; set; }
+}
+
+public class InnRestResponse
+{
+	public bool rested { get; set; }
+	public string type { get; set; }
+	public string location { get; set; }
+	public int hp { get; set; }
+	public int maxHp { get; set; }
+	public int mana { get; set; }
+	public int maxMana { get; set; }
+	public int hpRestored { get; set; }
+	public int manaRestored { get; set; }
+}
+
+public class RestStatus
+{
+	public bool resting { get; set; }
+	public string type { get; set; }
+	public DateTime startedAt { get; set; }
+	public DateTime until { get; set; }
+	public double elapsedSeconds { get; set; }
+	public int totalDurationSeconds { get; set; }
+	public int currentHp { get; set; }
+	public int currentMana { get; set; }
+	public int hp { get; set; }
+	public int maxHp { get; set; }
+	public int mana { get; set; }
+	public int maxMana { get; set; }
+	public RestRecoveryAmount recovered { get; set; }
+}
+
+public class StopRestResponse
+{
+	public bool stopped { get; set; }
+	public bool completed { get; set; }
+	public double elapsedSeconds { get; set; }
+	public RestRecoveryAmount recovered { get; set; }
+	public int hp { get; set; }
+	public int maxHp { get; set; }
+	public int mana { get; set; }
+	public int maxMana { get; set; }
+}
+
+public class RestRecoveryAmount
+{
+	public int hp { get; set; }
+	public int mana { get; set; }
+}
+
+public class ShopResponse
+{
+	public string townId { get; set; }
+	public string shop { get; set; }
+	public string description { get; set; }
+	public int restockMinutes { get; set; }
+	public int gold { get; set; }
+	public ShopStockItem[] items { get; set; }
+}
+
+public class ShopStockItem
+{
+	public string id { get; set; }
+	public string name { get; set; }
+	public string type { get; set; }
+	public string rarity { get; set; }
+	public int price { get; set; }
+	public int sellPrice { get; set; }
+	public int levelRequired { get; set; }
+	public string classRestriction { get; set; }
+	public string weight { get; set; }
+	public int stock { get; set; }
+	public int maxStock { get; set; }
+}
+
+public class BuyItem
+{
+	public string itemId { get; set; }
+	public int quantity { get; set; }
+}
+
+public class BuyItemResponse
+{
+	public string bought { get; set; }
+	public int quantity { get; set; }
+	public int totalCost { get; set; }
+	public int gold { get; set; }
+	public string message { get; set; }
+}
+
+public class SellItem
+{
+	public string itemId { get; set; }
+	public int quantity { get; set; }
+}
+
+public class SellItemResponse
+{
+	public string sold { get; set; }
+	public int quantity { get; set; }
+	public int unitPrice { get; set; }
+	public int totalPrice { get; set; }
+	public int gold { get; set; }
+	public string message { get; set; }
+}
+
+public class QuestObjective
+{
+	public string type { get; set; }
+	public string target { get; set; }
+	public int quantity { get; set; }
+	public string description { get; set; }
+	public int current { get; set; }
+	public int @required { get; set; }
+}
+
+public class QuestRewards
+{
+	public int xp { get; set; }
+	public int gold { get; set; }
+	public QuestRewardItem[] items { get; set; }
+}
+
+public class QuestRewardItem
+{
+	public string itemId { get; set; }
+	public int quantity { get; set; }
+}
+
+public class AvailableQuestsResponse
+{
+	public string town { get; set; }
+	public AvailableQuest[] quests { get; set; }
+}
+
+public class AvailableQuest
+{
+	public string id { get; set; }
+	public string name { get; set; }
+	public string description { get; set; }
+	public int levelMin { get; set; }
+	public int levelMax { get; set; }
+	public QuestObjective[] objectives { get; set; }
+	public QuestRewards rewards { get; set; }
+}
+
+public class ActiveQuestsResponse
+{
+	public int activeCount { get; set; }
+	public int maxActive { get; set; }
+	public ActiveQuest[] quests { get; set; }
+}
+
+public class ActiveQuest
+{
+	public string id { get; set; }
+	public string name { get; set; }
+	public string description { get; set; }
+	public string giverTown { get; set; }
+	public string status { get; set; }
+	public QuestObjective[] objectives { get; set; }
+	public QuestRewards rewards { get; set; }
+	public DateTime acceptedAt { get; set; }
+	public DateTime completedAt { get; set; }
+}
+
+public class AcceptQuest
+{
+	public string questId { get; set; }
+}
+
+public class AcceptQuestResponse
+{
+	public string message { get; set; }
+	public AcceptedQuest quest { get; set; }
+}
+
+public class AcceptedQuest
+{
+	public string id { get; set; }
+	public string name { get; set; }
+	public string description { get; set; }
+	public string status { get; set; }
+	public QuestObjective[] objectives { get; set; }
+	public QuestRewards rewards { get; set; }
+}
+
+public class TurnInQuest
+{
+	public string questId { get; set; }
+}
+
+public class TurnInQuestResponse
+{
+	public string message { get; set; }
+	public TurnInQuestRewards rewards { get; set; }
+}
+
+public class TurnInQuestRewards
+{
+	public int xp { get; set; }
+	public int gold { get; set; }
+	public TurnInQuestRewardItem[] items { get; set; }
+	public bool leveledUp { get; set; }
+	public int newLevel { get; set; }
+	public Newspell[] newSpells { get; set; }
+}
+
+public class TurnInQuestRewardItem
+{
+	public string itemId { get; set; }
+	public int quantity { get; set; }
+	public string name { get; set; }
+}
+
+public class AbandonQuest
+{
+	public string questId { get; set; }
+}
+
+public class AbandonQuestResponse
+{
+	public string message { get; set; }
 }
