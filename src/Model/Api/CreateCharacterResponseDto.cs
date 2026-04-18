@@ -1,7 +1,7 @@
 ﻿public class CreateCharacterResponseDto
 {
 	public string Error { get; set; }
-	public string Message { get; set; }
+	public string[] Message { get; set; }
 
 	public string id { get; set; }
 	public string user_id { get; set; }

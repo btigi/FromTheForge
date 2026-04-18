@@ -25,7 +25,7 @@ var token = string.Empty;
 
 var commands = new Dictionary<string, (string Help, Func<Task> Run)>(StringComparer.OrdinalIgnoreCase);
 
-commands["r"] = ("Register account", async () =>
+commands["register"] = ("Register account", async () =>
 {
 	var registerEmail = Environment.GetEnvironmentVariable("FromTheForge_Username")?.Trim();
 	if (string.IsNullOrWhiteSpace(registerEmail))
@@ -49,7 +49,7 @@ commands["r"] = ("Register account", async () =>
 }
 );
 
-commands["l"] = ("Login", async () =>
+commands["login"] = ("Login", async () =>
 {
 	var loginEmail = Environment.GetEnvironmentVariable("FromTheForge_Username")?.Trim();
 	if (string.IsNullOrWhiteSpace(loginEmail))
@@ -80,32 +80,43 @@ commands["l"] = ("Login", async () =>
 
 commands["me"] = ("Get authenticated profile", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var meResponse = await Get<MeResponseDto>(Constants.Me, token);
-	Console.WriteLine(meResponse);
+	Console.WriteLine($"Id: {meResponse.Id}");
+	Console.WriteLine($"Email: {meResponse.Email}");
 }
 );
 
 commands["create"] = ("Create character", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("Name");
 	var name = Console.ReadLine();
-	Console.WriteLine("Race");
+	Console.WriteLine("Race"); // TODO: validation
 	Console.WriteLine("human, elf, dwarf, halfling, orc");
 	var race = Console.ReadLine();
-	Console.WriteLine("Class");
+	Console.WriteLine("Class"); // TODO: validation
 	Console.WriteLine("warrior, mage, rogue, cleric, ranger");
 	var @class = Console.ReadLine();
-	Console.WriteLine("STR");
+	Console.WriteLine("STR"); // TODO: validation
 	var str = Console.ReadLine();
-	Console.WriteLine("DEX");
+	Console.WriteLine("DEX"); // TODO: validation
 	var dex = Console.ReadLine();
-	Console.WriteLine("CON");
+	Console.WriteLine("CON"); // TODO: validation
 	var con = Console.ReadLine();
-	Console.WriteLine("INT");
+	Console.WriteLine("INT"); // TODO: validation
 	var intl = Console.ReadLine();
-	Console.WriteLine("WIS");
+	Console.WriteLine("WIS"); // TODO: validation
 	var wis = Console.ReadLine();
-	Console.WriteLine("CHA");
+	Console.WriteLine("CHA"); // TODO: validation
 	var cha = Console.ReadLine();
 	var createCharacter = new CreateCharacterDto();
 	createCharacter.Name = name;
@@ -119,12 +130,18 @@ commands["create"] = ("Create character", async () =>
 	createCharacter.Charisma = Convert.ToInt32(cha);
 	jsonString = JsonSerializer.Serialize(createCharacter, options);
 	var createCharacterResponse = await Post<CreateCharacterResponseDto>(jsonString, Constants.CreateCharacter, token);
+	//TODO: if error then show message
 	Console.WriteLine(createCharacterResponse);
 }
 );
 
 commands["get"] = ("Get my character", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var character = await Get<Character>(Constants.GetCharacter, token);
 	if (character == null)
 	{
@@ -137,12 +154,22 @@ commands["get"] = ("Get my character", async () =>
 
 commands["allocate"] = ("Placeholder: allocate stat point on level up", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("Allocate a stat point (gained on level up)");
 }
 );
 
 commands["travel"] = ("Move one step (north/east/south/west)", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("Direction");
 	Console.WriteLine("north, east, south, west");
 	var direction = Console.ReadLine();
@@ -155,6 +182,11 @@ commands["travel"] = ("Move one step (north/east/south/west)", async () =>
 
 commands["go"] = ("Pathfind to coordinates", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("X coordinate");
 	var x = Console.ReadLine();
 	Console.WriteLine("Y coordinate");
@@ -170,6 +202,11 @@ commands["go"] = ("Pathfind to coordinates", async () =>
 
 commands["travelstatus"] = ("Get travel status", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var travelStatusResponse = await Get<TravelStatusResponseDto>(Constants.TravelStatus, token);
 	Console.WriteLine(travelStatusResponse);
 }
@@ -177,6 +214,11 @@ commands["travelstatus"] = ("Get travel status", async () =>
 
 commands["travelcancel"] = ("Cancel active travel", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var travelCancelResponse = await Post<TravelCancelResponseDto>(string.Empty, Constants.TravelCancel, token);
 	Console.WriteLine(travelCancelResponse);
 }
@@ -184,6 +226,11 @@ commands["travelcancel"] = ("Cancel active travel", async () =>
 
 commands["map"] = ("Get world map", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var mapResponse = await Get<MapResponseDto>(Constants.Map, token);
 	if (mapResponse?.terrain != null)
 	{
@@ -208,6 +255,11 @@ commands["map"] = ("Get world map", async () =>
 
 commands["regions"] = ("List map regions", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var regionsResponse = await Get<Region[]>(Constants.Regions, token);
 	Console.WriteLine(regionsResponse);
 }
@@ -215,6 +267,11 @@ commands["regions"] = ("List map regions", async () =>
 
 commands["mapdetail"] = ("Cell detail at x,y", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("X coordinate");
 	var xMapDetail = Console.ReadLine();
 	Console.WriteLine("Y coordinate");
@@ -226,6 +283,11 @@ commands["mapdetail"] = ("Cell detail at x,y", async () =>
 
 commands["combatstatus"] = ("Get combat status", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var combatStatusResponse = await Get<CombatStatus>(Constants.CombatStatus, token);
 	Console.WriteLine(combatStatusResponse);
 }
@@ -233,6 +295,11 @@ commands["combatstatus"] = ("Get combat status", async () =>
 
 commands["combataction"] = ("Combat action (attack, cast, use_item, flee)", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("action");
 	Console.WriteLine("  attack, cast, use_item, flee");
 	var combatAction = Console.ReadLine();
@@ -244,6 +311,11 @@ commands["combataction"] = ("Combat action (attack, cast, use_item, flee)", asyn
 
 commands["inventory"] = ("Get inventory", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var inventoryResponse = await Get<Inventory>(Constants.Inventory, token);
 	if (inventoryResponse == null)
 	{
@@ -256,6 +328,11 @@ commands["inventory"] = ("Get inventory", async () =>
 
 commands["pickup"] = ("Pick up an item", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("itemid");
 	var itemid = Console.ReadLine();
 	Console.WriteLine("quantity");
@@ -271,6 +348,11 @@ commands["pickup"] = ("Pick up an item", async () =>
 
 commands["drop"] = ("Drop an item", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("itemid");
 	var itemidDropped = Console.ReadLine();
 	Console.WriteLine("quantity");
@@ -286,6 +368,11 @@ commands["drop"] = ("Drop an item", async () =>
 
 commands["equip"] = ("Equip an item", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("itemid");
 	var itemidEquip = Console.ReadLine();
 	Console.WriteLine("slot");
@@ -302,6 +389,11 @@ commands["equip"] = ("Equip an item", async () =>
 
 commands["unequip"] = ("Unequip slot", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("slot");
 	Console.WriteLine("weapon, armor, helmet, shield, leggings, boots, gloves, ring1, ring2, amulet");
 	var unequipslot = Console.ReadLine();
@@ -315,6 +407,11 @@ commands["unequip"] = ("Unequip slot", async () =>
 
 commands["use"] = ("Use consumable", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("itemid");
 	var useitem = Console.ReadLine();
 	var use = new Use();
@@ -327,6 +424,11 @@ commands["use"] = ("Use consumable", async () =>
 
 commands["spellbook"] = ("Get spellbook", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var spellbookResponse = await Get<SpellbookResponse>(Constants.Spells, token);
 	Console.WriteLine(spellbookResponse);
 }
@@ -334,6 +436,11 @@ commands["spellbook"] = ("Get spellbook", async () =>
 
 commands["spelllearn"] = ("Learn spell", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("spellId");
 	var learnSpellId = Console.ReadLine();
 	var learnSpell = new LearnSpell();
@@ -346,6 +453,11 @@ commands["spelllearn"] = ("Learn spell", async () =>
 
 commands["spellcast"] = ("Cast spell (out of combat)", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("spellId");
 	var castSpellId = Console.ReadLine();
 	var castSpell = new CastSpell();
@@ -358,6 +470,11 @@ commands["spellcast"] = ("Cast spell (out of combat)", async () =>
 
 commands["restcamp"] = ("Start camping", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("duration seconds (10-600)");
 	var campDuration = Console.ReadLine();
 	var startCamp = new StartCampRequest();
@@ -370,6 +487,11 @@ commands["restcamp"] = ("Start camping", async () =>
 
 commands["restinn"] = ("Rest at an inn", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var innRestResponse = await Post<InnRestResponse>(string.Empty, Constants.RestInn, token);
 	Console.WriteLine(innRestResponse);
 }
@@ -377,6 +499,11 @@ commands["restinn"] = ("Rest at an inn", async () =>
 
 commands["reststatus"] = ("Get rest status", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var restStatusResponse = await Get<RestStatus>(Constants.RestStatusPath, token);
 	Console.WriteLine(restStatusResponse);
 }
@@ -384,6 +511,11 @@ commands["reststatus"] = ("Get rest status", async () =>
 
 commands["reststop"] = ("Stop resting", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var stopRestResponse = await Post<StopRestResponse>(string.Empty, Constants.RestStop, token);
 	Console.WriteLine(stopRestResponse);
 }
@@ -391,6 +523,11 @@ commands["reststop"] = ("Stop resting", async () =>
 
 commands["shop"] = ("Shop inventory", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("townId");
 	var shopTownId = Console.ReadLine();
 	var shopResponse = await Get<ShopResponse>($"{Constants.Shops}/{shopTownId}", token);
@@ -400,6 +537,11 @@ commands["shop"] = ("Shop inventory", async () =>
 
 commands["shopbuy"] = ("Buy items", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("townId");
 	var buyTownId = Console.ReadLine();
 	Console.WriteLine("itemId");
@@ -418,6 +560,11 @@ commands["shopbuy"] = ("Buy items", async () =>
 
 commands["shopsell"] = ("Sell items", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("townId");
 	var sellTownId = Console.ReadLine();
 	Console.WriteLine("itemId");
@@ -436,6 +583,11 @@ commands["shopsell"] = ("Sell items", async () =>
 
 commands["questavailable"] = ("List available quests (at current town)", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var questAvailableResponse = await Get<AvailableQuestsResponse>(Constants.QuestAvailable, token);
 	Console.WriteLine(questAvailableResponse);
 }
@@ -443,6 +595,11 @@ commands["questavailable"] = ("List available quests (at current town)", async (
 
 commands["questactive"] = ("List active quests", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var questActiveResponse = await Get<ActiveQuestsResponse>(Constants.QuestActive, token);
 	Console.WriteLine(questActiveResponse);
 }
@@ -450,6 +607,11 @@ commands["questactive"] = ("List active quests", async () =>
 
 commands["questaccept"] = ("Accept quest", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("questId");
 	var acceptQuestId = Console.ReadLine();
 	var acceptQuest = new AcceptQuest();
@@ -462,6 +624,11 @@ commands["questaccept"] = ("Accept quest", async () =>
 
 commands["questturnin"] = ("Complete a quest", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("questId");
 	var turnInQuestId = Console.ReadLine();
 	var turnInQuest = new TurnInQuest();
@@ -474,6 +641,11 @@ commands["questturnin"] = ("Complete a quest", async () =>
 
 commands["questabandon"] = ("Abandon a quest", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("questId");
 	var abandonQuestId = Console.ReadLine();
 	var abandonQuest = new AbandonQuest();
@@ -486,6 +658,11 @@ commands["questabandon"] = ("Abandon a quest", async () =>
 
 commands["dungeonstatus"] = ("Dungeon status", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var dungeonStatusResponse = await Get<DungeonStatus>(Constants.DungeonStatusPath, token);
 	Console.WriteLine(dungeonStatusResponse);
 }
@@ -493,6 +670,11 @@ commands["dungeonstatus"] = ("Dungeon status", async () =>
 
 commands["dungeonenter"] = ("Enter dungeon", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("poiId");
 	var dungeonPoiId = Console.ReadLine();
 	var enterDungeon = new EnterDungeon();
@@ -505,6 +687,11 @@ commands["dungeonenter"] = ("Enter dungeon", async () =>
 
 commands["dungeonadvance"] = ("Advance to next dungeon room", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var dungeonAdvanceResponse = await Post<DungeonAdvanceResponse>(string.Empty, Constants.DungeonAdvance, token);
 	Console.WriteLine(dungeonAdvanceResponse);
 }
@@ -512,6 +699,11 @@ commands["dungeonadvance"] = ("Advance to next dungeon room", async () =>
 
 commands["dungeonleave"] = ("Leave dungeon", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var dungeonLeaveResponse = await Post<DungeonLeaveResponse>(string.Empty, Constants.DungeonLeave, token);
 	Console.WriteLine(dungeonLeaveResponse);
 }
@@ -519,6 +711,11 @@ commands["dungeonleave"] = ("Leave dungeon", async () =>
 
 commands["gatheringskills"] = ("Gathering skill levels", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var gatheringSkillsResponse = await Get<GatheringSkillsResponse>(Constants.GatheringSkills, token);
 	Console.WriteLine(gatheringSkillsResponse);
 }
@@ -526,6 +723,11 @@ commands["gatheringskills"] = ("Gathering skill levels", async () =>
 
 commands["gatheringnodes"] = ("Nearby gathering nodes", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var gatheringNodesResponse = await Get<GatheringNodesResponse>(Constants.GatheringNodes, token);
 	Console.WriteLine(gatheringNodesResponse);
 }
@@ -533,6 +735,11 @@ commands["gatheringnodes"] = ("Nearby gathering nodes", async () =>
 
 commands["gatheringharvest"] = ("Harvest node", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("nodeId");
 	var harvestNodeId = Console.ReadLine();
 	var harvest = new Harvest();
@@ -545,6 +752,11 @@ commands["gatheringharvest"] = ("Harvest node", async () =>
 
 commands["craftingskills"] = ("Crafting skill levels", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var craftingSkillsResponse = await Get<CraftingSkillsResponse>(Constants.CraftingSkills, token);
 	Console.WriteLine(craftingSkillsResponse);
 }
@@ -552,6 +764,11 @@ commands["craftingskills"] = ("Crafting skill levels", async () =>
 
 commands["craftingrecipes"] = ("Crafting recipes", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("skill filter (blacksmithing, alchemy, woodworking, blank for all)");
 	var craftingSkillFilter = Console.ReadLine();
 	var recipesUrl = string.IsNullOrWhiteSpace(craftingSkillFilter) ? Constants.CraftingRecipes : $"{Constants.CraftingRecipes}?skill={craftingSkillFilter}";
@@ -562,6 +779,11 @@ commands["craftingrecipes"] = ("Crafting recipes", async () =>
 
 commands["craftingstations"] = ("Nearby crafting stations", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	var craftingStationsResponse = await Get<CraftingStationsResponse>(Constants.CraftingStations, token);
 	Console.WriteLine(craftingStationsResponse);
 }
@@ -569,6 +791,11 @@ commands["craftingstations"] = ("Nearby crafting stations", async () =>
 
 commands["craftingcraft"] = ("Craft item", async () =>
 {
+	if (string.IsNullOrWhiteSpace(token))
+	{
+		Console.WriteLine("You must be logged in to use this command.");
+		return;
+	}
 	Console.WriteLine("recipeId");
 	var recipeId = Console.ReadLine();
 	var craft = new Craft();
@@ -623,7 +850,9 @@ commands["gamespells"] = ("Game data: all spells", async () =>
 commands["help"] = ("Show this command list", () =>
 {
 	foreach (var kv in commands.OrderBy(k => k.Key, StringComparer.OrdinalIgnoreCase))
+	{
 		Console.WriteLine($"  {kv.Key,-22} {kv.Value.Help}");
+	}
 	Console.WriteLine("  q                      Quit");
 	return Task.CompletedTask;
 }
