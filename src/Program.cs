@@ -6,14 +6,24 @@ const string password = "";
 
 const string Register = "/api/auth/register";
 const string Login = "/api/auth/login";
+const string Me = "/api/auth/me";
 const string CreateCharacter = "/api/characters";
 const string GetCharacter = "/api/characters/me";
 const string Travel = "/api/travel/move";
 const string Go = "/api/travel/go";
 const string TravelStatus = "/api/travel/status";
 const string TravelCancel = "/api/travel/cancel";
-const string Me = "/api/auth/me";
-
+const string Map = "/api/map";
+const string Regions = "/api/map/regions";
+const string MapDetail = "/api/map/cell";
+const string CombatStatus = "/api/combat/status";
+const string CombatAction = "/api/combat/action";
+const string Inventory = "/api/inventory";
+const string Pickup = "/api/inventory/pick-up";
+const string Drop = "/api/inventory/drop";
+const string Equip = "/api/inventory/equip";
+const string Unequip = "/api/inventory/unequip";
+const string Use = "/api/inventory/use";
 
 var jsonString = "";
 
@@ -136,6 +146,94 @@ while (action != "q")
 		case "travelcancel":
 			var travelCancelResponse = await Post<TravelCancelResponseDto>(string.Empty, TravelCancel, token);
 			Console.WriteLine(travelCancelResponse);
+			break;
+		case "map":
+			var mapResponse = await Get<MapResponseDto>(Map, token);
+			Console.WriteLine(mapResponse);
+			break;
+		case "regions":
+			var regionsResponse = await Get<Region[]>(Regions, token);
+			Console.WriteLine(regionsResponse);
+			break;
+		case "mapdetail":
+			Console.WriteLine("X coordinate");
+			var xMapDetail = Console.ReadLine();
+			Console.WriteLine("Y coordinate");
+			var yMapDetail = Console.ReadLine();
+			var mapDetailResponse = await Get<MapDetailResponseDto>($"{MapDetail}/{xMapDetail}/{yMapDetail}", token);
+			Console.WriteLine(mapDetailResponse);
+			break;
+		case "combatstatus":
+			var combatStatusResponse = await Get<CombatStatus>(CombatStatus, token);
+			Console.WriteLine(combatStatusResponse);
+			break;
+		case "combataction":
+			Console.WriteLine("action");
+			Console.WriteLine("  attack, cast, use_item, flee");
+			var combatAction = Console.ReadLine();
+			jsonString = JsonSerializer.Serialize(combatAction, options);
+			var combatActionResponse = await Post<CombatActionResult>(jsonString, CombatAction, token);
+			Console.WriteLine(combatActionResponse);
+			break;
+		case "inventory":
+			var inventoryResponse = await Get<Inventory>(Inventory, token);
+			Console.WriteLine(inventoryResponse);
+			break;
+		case "pickup":
+			Console.WriteLine("itemid");
+			var itemid = Console.ReadLine();
+			Console.WriteLine("quantity");
+			var quantity = Console.ReadLine();
+			var pickup = new Pickup();
+			pickup.itemId = itemid;
+			pickup.quantity = Convert.ToInt32(quantity);
+			jsonString = JsonSerializer.Serialize(pickup, options);
+			var pickupResponse = await Post<PickupResponse>(jsonString, Pickup, token);
+			Console.WriteLine(pickupResponse);
+			break;
+		case "drop":
+			Console.WriteLine("itemid");
+			var itemidDropped = Console.ReadLine();
+			Console.WriteLine("quantity");
+			var quantityDropped = Console.ReadLine();
+			var drop = new Drop();
+			drop.itemId = itemidDropped;
+			drop.quantity = Convert.ToInt32(quantityDropped);
+			jsonString = JsonSerializer.Serialize(drop, options);
+			var droppedResponse = await Post<DropResponse>(jsonString, Drop, token);
+			Console.WriteLine(droppedResponse);
+			break;
+		case "equip":
+			Console.WriteLine("itemid");
+			var itemidEquip = Console.ReadLine();
+			Console.WriteLine("slot");
+			Console.WriteLine("weapon, armor, helmet, shield, leggings, boots, gloves, ring1, ring2, amulet");
+			var slot = Console.ReadLine();
+			var equip = new Equip();
+			equip.itemId = itemidEquip;
+			equip.slot = slot;
+			jsonString = JsonSerializer.Serialize(equip, options);
+			var equipResponse = await Post<EquipResponse>(jsonString, Equip, token);
+			Console.WriteLine(equipResponse);
+			break;
+		case "unequip":
+			Console.WriteLine("slot");
+			Console.WriteLine("weapon, armor, helmet, shield, leggings, boots, gloves, ring1, ring2, amulet");
+			var unequipslot = Console.ReadLine();
+			var unequip = new Unequip();
+			unequip.slot = unequipslot;
+			jsonString = JsonSerializer.Serialize(unequip, options);
+			var unequipResponse = await Post<UnequipResponse>(jsonString, Unequip, token);
+			Console.WriteLine(unequipResponse);
+			break;
+		case "use":
+			Console.WriteLine("itemid");
+			var useitem = Console.ReadLine();
+			var use = new Use();
+			use.itemId = useitem;
+			jsonString = JsonSerializer.Serialize(use, options);
+			var useResponse = await Post<UseResponse>(jsonString, Use, token);
+			Console.WriteLine(useResponse);
 			break;
 	}
 	action = Console.ReadLine();
@@ -528,8 +626,8 @@ public class Discovery
 	public int y { get; set; }
 	public string terrain { get; set; }
 	public string description { get; set; }
-	public int level_min { get; set; }
-	public int level_max { get; set; }
+	public int? level_min { get; set; }
+	public int? level_max { get; set; }
 	public DateTime discoveredAt { get; set; }
 }
 
@@ -603,4 +701,234 @@ public class TravelCancelResponseDto
 	public int cellsTraversed { get; set; }
 	public Discovery[] discoveries { get; set; }
 	public Xp xp { get; set; }
+}
+
+
+public class MapResponseDto
+{
+	public int width { get; set; }
+	public int height { get; set; }
+	public string[][] terrain { get; set; }
+	public Pois[] pois { get; set; }
+	public Discovery[] discoveries { get; set; }
+}
+
+public class Pois
+{
+	public string id { get; set; }
+	public string name { get; set; }
+	public string type { get; set; }
+	public string category { get; set; }
+	public int x { get; set; }
+	public int y { get; set; }
+	public string terrain { get; set; }
+	public string description { get; set; }
+	public int? level_min { get; set; }
+	public int? level_max { get; set; }
+	public DateTime discoveredAt { get; set; }
+}
+
+public class Region
+{
+	public string id { get; set; }
+	public string name { get; set; }
+	public string[] terrains { get; set; }
+	public int centerX { get; set; }
+	public int centerY { get; set; }
+	public int radius { get; set; }
+	public string color { get; set; }
+	public string description { get; set; }
+}
+
+public class MapDetailResponseDto
+{
+	public int x { get; set; }
+	public int y { get; set; }
+	public string terrain { get; set; }
+	public Poi poi { get; set; }
+}
+
+public class Poi
+{
+	public string id { get; set; }
+	public string name { get; set; }
+	public string type { get; set; }
+	public string category { get; set; }
+	public int x { get; set; }
+	public int y { get; set; }
+	public string terrain { get; set; }
+	public string description { get; set; }
+	public int? level_min { get; set; }
+	public int? level_max { get; set; }
+	public DateTime discoveredAt { get; set; }
+}
+
+public class CombatStatus
+{
+	public bool inCombat { get; set; }
+	public int turn { get; set; }
+	public string source { get; set; }
+	public Monster monster { get; set; }
+	public Player player { get; set; }
+	public string[] log { get; set; }
+}
+
+public class Monster
+{
+	public string id { get; set; }
+	public string name { get; set; }
+	public int level { get; set; }
+	public int hp { get; set; }
+	public int maxHp { get; set; }
+	public int ac { get; set; }
+	public string type { get; set; }
+	public Effect[] effects { get; set; }
+}
+
+public class Effect
+{
+	public string type { get; set; }
+	public int duration { get; set; }
+	public int value { get; set; }
+	public string source { get; set; }
+}
+
+public class Player
+{
+	public int hp { get; set; }
+	public int maxHp { get; set; }
+	public int mana { get; set; }
+	public int maxMana { get; set; }
+	public int ac { get; set; }
+	public Effect[] effects { get; set; }
+}
+
+public class CombatAction
+{
+	public string action { get; set; }
+	public string spellId { get; set; }
+	public string itemId { get; set; }
+}
+
+public class CombatActionResult
+{
+	public string outcome { get; set; }
+	public int turn { get; set; }
+	public string[] log { get; set; }
+	public Monster monster { get; set; }
+	public Player player { get; set; }
+	public int xp { get; set; }
+	public int gold { get; set; }
+	public Item[] items { get; set; }
+	public Levelup levelUp { get; set; }
+	public int goldLost { get; set; }
+	public int xpLost { get; set; }
+	public int hp { get; set; }
+	public string message { get; set; }
+}
+
+public class Item
+{
+	public string itemId { get; set; }
+	public int quantity { get; set; }
+}
+
+public class Inventory
+{
+	public Equipment equipment { get; set; }
+	public Backpack[] backpack { get; set; }
+	public float carryWeight { get; set; }
+	public float carryCapacity { get; set; }
+}
+
+public class Backpack
+{
+	public string itemId { get; set; }
+	public string name { get; set; }
+	public string type { get; set; }
+	public string rarity { get; set; }
+	public int quantity { get; set; }
+	public float weight { get; set; }
+	public int levelRequired { get; set; }
+	public string classRestriction { get; set; }
+}
+
+public class Pickup
+{
+	public string itemId { get; set; }
+	public int quantity { get; set; }
+}
+
+public class PickupResponse
+{
+	public string pickedUp { get; set; }
+	public int quantity { get; set; }
+	public string message { get; set; }
+}
+
+public class Drop
+{
+	public string itemId { get; set; }
+	public int quantity { get; set; }
+}
+
+public class DropResponse
+{
+	public string dropped { get; set; }
+	public int quantity { get; set; }
+	public string message { get; set; }
+}
+
+public class Equip
+{
+	public string itemId { get; set; }
+	public string slot { get; set; }
+}
+
+public class EquipResponse
+{
+	public Equipped equipped { get; set; }
+	public Unequipped unequipped { get; set; }
+	public string message { get; set; }
+}
+
+public class Equipped
+{
+	public string slot { get; set; }
+	public Item item { get; set; }
+}
+
+public class Unequipped
+{
+	public string slot { get; set; }
+	public Item item { get; set; }
+}
+
+public class Unequip
+{
+	public string slot { get; set; }
+}
+
+public class UnequipResponse
+{
+	public Unequipped unequipped { get; set; }
+	public string message { get; set; }
+}
+
+public class Use
+{
+	public string itemId { get; set; }
+}
+
+public class UseResponse
+{
+	public string used { get; set; }
+	public string message { get; set; }
+	public Effect effect { get; set; }
+	public string result { get; set; }
+	public int hp { get; set; }
+	public int maxHp { get; set; }
+	public int mana { get; set; }
+	public int maxMana { get; set; }
+	public string learned { get; set; }
 }
