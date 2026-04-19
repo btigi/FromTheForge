@@ -196,7 +196,8 @@ commands["go"] = ("Pathfind to coordinates", async () =>
 	go.y = Convert.ToInt32(y);
 	jsonString = JsonSerializer.Serialize(go, options);
 	var goResponse = await Post<GoResponseDto>(jsonString, Constants.Go, token);
-	Console.WriteLine(goResponse);
+	Console.WriteLine($"Moving {goResponse.totalCells} cells in {goResponse.travelSeconds} seconds");
+	//Console.WriteLine(goResponse);
 }
 );
 
@@ -302,9 +303,23 @@ commands["combataction"] = ("Combat action (attack, cast, use_item, flee)", asyn
 	}
 	Console.WriteLine("action");
 	Console.WriteLine("  attack, cast, use_item, flee");
-	var combatAction = Console.ReadLine();
+	var combatActionInfo = Console.ReadLine();
+
+	var combatAction = new CombatAction();
+	combatAction.action = combatActionInfo;
+
 	jsonString = JsonSerializer.Serialize(combatAction, options);
 	var combatActionResponse = await Post<CombatActionResult>(jsonString, Constants.CombatAction, token);
+	foreach (var log in combatActionResponse.log)
+	{
+		Console.WriteLine(log);
+	}
+	Console.WriteLine(combatActionResponse.outcome);
+	if (combatActionResponse.outcome == "ongoing")
+	{
+		Console.WriteLine(combatActionResponse.monster.name);
+		Console.WriteLine($"{combatActionResponse.monster.hp} / {combatActionResponse.monster.maxHp} [AC: {combatActionResponse.monster.ac}]");
+	}
 	Console.WriteLine(combatActionResponse);
 }
 );
@@ -729,7 +744,15 @@ commands["gatheringnodes"] = ("Nearby gathering nodes", async () =>
 		return;
 	}
 	var gatheringNodesResponse = await Get<GatheringNodesResponse>(Constants.GatheringNodes, token);
-	Console.WriteLine(gatheringNodesResponse);
+	if (gatheringNodesResponse.nodes.Length > 0)
+	{
+		foreach (var node in gatheringNodesResponse.nodes)
+		{
+			Console.WriteLine($"{node.name} ({node.poiId}) [{node.skill}]");
+			Console.WriteLine($"{node.ready} ({node.cooldownMinutes}) XP: [{node.xpReward}]");
+		}
+	}
+	//Console.WriteLine(gatheringNodesResponse);
 }
 );
 
