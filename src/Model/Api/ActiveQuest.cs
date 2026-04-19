@@ -8,5 +8,5 @@
 	public QuestObjective[] objectives { get; set; }
 	public QuestRewards rewards { get; set; }
 	public DateTime acceptedAt { get; set; }
-	public DateTime completedAt { get; set; }
+	public DateTime? completedAt { get; set; }
 }

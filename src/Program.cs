@@ -208,6 +208,7 @@ commands["go"] = ("Pathfind to coordinates", async () =>
 	go.y = Convert.ToInt32(y);
 	jsonString = JsonSerializer.Serialize(go, options);
 	var goResponse = await Post<GoResponseDto>(jsonString, Constants.Go, token);
+	Console.WriteLine($"Started at {goResponse.startedAt}, eta {goResponse.eta}");
 	Console.WriteLine($"Moving {goResponse.totalCells} cells in {goResponse.travelSeconds} seconds");
 }
 );
@@ -222,9 +223,9 @@ commands["travelstatus"] = ("Get travel status", async () =>
 	var travelStatusResponse = await Get<TravelStatusResponseDto>(Constants.TravelStatus, token);
 	if (travelStatusResponse.isTraveling)
 	{
-		Console.WriteLine($"[{travelStatusResponse.position.x},{travelStatusResponse.position.y}] [{travelStatusResponse.destination.x},{travelStatusResponse.destination.y}]");
-		Console.WriteLine($"[{travelStatusResponse.estimatedCurrent.x},{travelStatusResponse.estimatedCurrent.y}]");
-		Console.WriteLine($"{travelStatusResponse.progressIndex},{travelStatusResponse.totalCells}");
+		Console.WriteLine($"From [{travelStatusResponse.position.x},{travelStatusResponse.position.y}] to [{travelStatusResponse.destination.x},{travelStatusResponse.destination.y}]");
+		Console.WriteLine($"Current [{travelStatusResponse.estimatedCurrent.x},{travelStatusResponse.estimatedCurrent.y}]");
+		Console.WriteLine($"Progress {travelStatusResponse.progressIndex} out of {travelStatusResponse.totalCells} cells");
 		Console.WriteLine($"{travelStatusResponse.startedAt} {travelStatusResponse.eta}");
 		//TODO: discoveries, xp, encounter
 	}
@@ -629,8 +630,8 @@ commands["spelllearn"] = ("Learn spell", async () =>
 	learnSpell.spellId = learnSpellId;
 	jsonString = JsonSerializer.Serialize(learnSpell, options);
 	var learnSpellResponse = await Post<LearnSpellResponse>(jsonString, Constants.SpellsLearn, token);
-	//TODO:
-	Console.WriteLine(learnSpellResponse);
+	Console.WriteLine(learnSpellResponse.message);
+	Console.WriteLine(learnSpellResponse.learned);
 }
 );
 
@@ -665,8 +666,13 @@ commands["restcamp"] = ("Start camping", async () =>
 	startCamp.duration = Convert.ToInt32(campDuration);
 	jsonString = JsonSerializer.Serialize(startCamp, options);
 	var startCampResponse = await Post<StartCampResponse>(jsonString, Constants.RestCamp, token);
-	//TODO:
-	Console.WriteLine(startCampResponse);
+	Console.WriteLine($"{startCampResponse.resting}");
+	Console.WriteLine($"{startCampResponse.type}");
+	Console.WriteLine($"{startCampResponse.startedAt} {startCampResponse.until}");
+	if (startCampResponse.willRecover != null)
+	{
+		Console.WriteLine($"{startCampResponse.willRecover.hp} {startCampResponse.willRecover.mana}");
+	}
 }
 );
 
@@ -780,6 +786,7 @@ commands["questavailable"] = ("List available quests (at current town)", async (
 		return;
 	}
 	var questAvailableResponse = await Get<AvailableQuestsResponse>(Constants.QuestAvailable, token);
+	//TODO:
 	Console.WriteLine(questAvailableResponse);
 }
 );
@@ -792,7 +799,24 @@ commands["questactive"] = ("List active quests", async () =>
 		return;
 	}
 	var questActiveResponse = await Get<ActiveQuestsResponse>(Constants.QuestActive, token);
-	Console.WriteLine(questActiveResponse);
+
+	Console.WriteLine($"Active quests: {questActiveResponse.activeCount} / {questActiveResponse.maxActive}");
+	foreach (var quest in questActiveResponse.quests)
+	{
+		Console.WriteLine($"{quest.name} ({quest.id}) - {quest.status}");
+		Console.WriteLine($"  {quest.description}");
+		Console.WriteLine($"  Giver: {quest.giverTown}");
+		foreach (var objective in quest.objectives)
+		{
+			Console.WriteLine($"  - {objective.description}");
+			Console.WriteLine($"  - {objective.target} - {objective.current}");
+		}
+		Console.WriteLine($"  Rewards: {quest.rewards.gold} gold, {quest.rewards.xp} xp");
+		foreach (var item in quest.rewards.items)
+		{
+			Console.WriteLine($" - ({item.itemId}) x{item.quantity}");
+		}
+	}
 }
 );
 
@@ -809,6 +833,7 @@ commands["questaccept"] = ("Accept quest", async () =>
 	acceptQuest.questId = acceptQuestId;
 	jsonString = JsonSerializer.Serialize(acceptQuest, options);
 	var acceptQuestResponse = await Post<AcceptQuestResponse>(jsonString, Constants.QuestAccept, token);
+	//TODO:
 	Console.WriteLine(acceptQuestResponse);
 }
 );
@@ -826,6 +851,7 @@ commands["questturnin"] = ("Complete a quest", async () =>
 	turnInQuest.questId = turnInQuestId;
 	jsonString = JsonSerializer.Serialize(turnInQuest, options);
 	var turnInQuestResponse = await Post<TurnInQuestResponse>(jsonString, Constants.QuestTurnIn, token);
+	//TODO:
 	Console.WriteLine(turnInQuestResponse);
 }
 );
@@ -843,6 +869,7 @@ commands["questabandon"] = ("Abandon a quest", async () =>
 	abandonQuest.questId = abandonQuestId;
 	jsonString = JsonSerializer.Serialize(abandonQuest, options);
 	var abandonQuestResponse = await Post<AbandonQuestResponse>(jsonString, Constants.QuestAbandon, token);
+	//TODO:
 	Console.WriteLine(abandonQuestResponse);
 }
 );
@@ -855,6 +882,7 @@ commands["dungeonstatus"] = ("Dungeon status", async () =>
 		return;
 	}
 	var dungeonStatusResponse = await Get<DungeonStatus>(Constants.DungeonStatusPath, token);
+	//TODO:
 	Console.WriteLine(dungeonStatusResponse);
 }
 );
@@ -872,6 +900,7 @@ commands["dungeonenter"] = ("Enter dungeon", async () =>
 	enterDungeon.poiId = dungeonPoiId;
 	jsonString = JsonSerializer.Serialize(enterDungeon, options);
 	var enterDungeonResponse = await Post<DungeonStatus>(jsonString, Constants.DungeonEnter, token);
+	//TODO:
 	Console.WriteLine(enterDungeonResponse);
 }
 );
@@ -884,6 +913,7 @@ commands["dungeonadvance"] = ("Advance to next dungeon room", async () =>
 		return;
 	}
 	var dungeonAdvanceResponse = await Post<DungeonAdvanceResponse>(string.Empty, Constants.DungeonAdvance, token);
+	//TODO:
 	Console.WriteLine(dungeonAdvanceResponse);
 }
 );
@@ -896,6 +926,7 @@ commands["dungeonleave"] = ("Leave dungeon", async () =>
 		return;
 	}
 	var dungeonLeaveResponse = await Post<DungeonLeaveResponse>(string.Empty, Constants.DungeonLeave, token);
+	//TODO:
 	Console.WriteLine(dungeonLeaveResponse);
 }
 );
@@ -908,7 +939,9 @@ commands["gatheringskills"] = ("Gathering skill levels", async () =>
 		return;
 	}
 	var gatheringSkillsResponse = await Get<GatheringSkillsResponse>(Constants.GatheringSkills, token);
-	Console.WriteLine(JsonSerializer.Serialize(gatheringSkillsResponse, options));
+	Console.WriteLine($"Herbalism: Level {gatheringSkillsResponse.skills.herbalism.level} XP {gatheringSkillsResponse.skills.herbalism.xp} XP to level {gatheringSkillsResponse.skills.herbalism.xpToNext}");
+	Console.WriteLine($"Mining: Level {gatheringSkillsResponse.skills.mining.level} XP {gatheringSkillsResponse.skills.mining.xp} XP to level {gatheringSkillsResponse.skills.mining.xpToNext}");
+	Console.WriteLine($"Woodcutting: Level {gatheringSkillsResponse.skills.woodcutting.level} XP {gatheringSkillsResponse.skills.woodcutting.xp} XP to level {gatheringSkillsResponse.skills.woodcutting.xpToNext}");
 }
 );
 
@@ -928,7 +961,6 @@ commands["gatheringnodes"] = ("Nearby gathering nodes", async () =>
 			Console.WriteLine($"{node.ready} ({node.cooldownMinutes}) XP: [{node.xpReward}]");
 		}
 	}
-	//Console.WriteLine(gatheringNodesResponse);
 }
 );
 
@@ -945,6 +977,7 @@ commands["gatheringharvest"] = ("Harvest node", async () =>
 	harvest.nodeId = harvestNodeId;
 	jsonString = JsonSerializer.Serialize(harvest, options);
 	var harvestResponse = await Post<HarvestResponse>(jsonString, Constants.GatheringHarvest, token);
+	//TODO:
 	Console.WriteLine(JsonSerializer.Serialize(harvestResponse, options));
 }
 );
@@ -957,7 +990,9 @@ commands["craftingskills"] = ("Crafting skill levels", async () =>
 		return;
 	}
 	var craftingSkillsResponse = await Get<CraftingSkillsResponse>(Constants.CraftingSkills, token);
-	Console.WriteLine(craftingSkillsResponse);
+	Console.WriteLine($"Alchemy: Level {craftingSkillsResponse.skills.alchemy.level} XP {craftingSkillsResponse.skills.alchemy.xp} XP to level {craftingSkillsResponse.skills.alchemy.xpToNext}");
+	Console.WriteLine($"Blacksmithing: Level {craftingSkillsResponse.skills.blacksmithing.level} XP {craftingSkillsResponse.skills.blacksmithing.xp} XP to level {craftingSkillsResponse.skills.blacksmithing.xpToNext}");
+	Console.WriteLine($"Woodworking: Level {craftingSkillsResponse.skills.woodworking.level} XP {craftingSkillsResponse.skills.woodworking.xp} XP to level {craftingSkillsResponse.skills.woodworking.xpToNext}");
 }
 );
 
@@ -972,6 +1007,7 @@ commands["craftingrecipes"] = ("Crafting recipes", async () =>
 	var craftingSkillFilter = Console.ReadLine();
 	var recipesUrl = string.IsNullOrWhiteSpace(craftingSkillFilter) ? Constants.CraftingRecipes : $"{Constants.CraftingRecipes}?skill={craftingSkillFilter}";
 	var craftingRecipesResponse = await Get<CraftingRecipesResponse>(recipesUrl, token);
+	//TODO:
 	Console.WriteLine(craftingRecipesResponse);
 }
 );
@@ -984,6 +1020,7 @@ commands["craftingstations"] = ("Nearby crafting stations", async () =>
 		return;
 	}
 	var craftingStationsResponse = await Get<CraftingStationsResponse>(Constants.CraftingStations, token);
+	//TODO:
 	Console.WriteLine(craftingStationsResponse);
 }
 );
@@ -1001,6 +1038,7 @@ commands["craftingcraft"] = ("Craft item", async () =>
 	craft.recipeId = recipeId;
 	jsonString = JsonSerializer.Serialize(craft, options);
 	var craftResponse = await Post<CraftResponse>(jsonString, Constants.CraftingCraft, token);
+	//TODO:
 	Console.WriteLine(craftResponse);
 }
 );
@@ -1035,14 +1073,40 @@ commands["gameclasses"] = ("Game data: all classes", async () =>
 commands["gameitems"] = ("Game data: all items", async () =>
 {
 	var gameItemsResponse = await Get<GameItemDef[]>(Constants.GameItems, token);
+
 	Console.WriteLine(JsonSerializer.Serialize(gameItemsResponse, options));
+	foreach (var item in gameItemsResponse)
+	{
+		Console.WriteLine($"{item.name} ({item.id})");
+		Console.WriteLine($"{item.type} ({item.rarity})");
+		Console.WriteLine($"{item.damage_min} ({item.damage_max})");
+		Console.WriteLine($"{item.armor}");
+		Console.WriteLine($"{item.value}");
+		Console.WriteLine($"{item.weight}lbs");
+		Console.WriteLine($"{item.level_req}");
+		Console.WriteLine($"{item.class_req}");
+		//Console.WriteLine($"{item.statusEffect}");
+		Console.WriteLine($"{item.statusChance}");
+	}
 }
 );
 
 commands["gamespells"] = ("Game data: all spells", async () =>
 {
 	var gameSpellsResponse = await Get<GameSpellDef[]>(Constants.GameSpells, token);
-	Console.WriteLine(JsonSerializer.Serialize(gameSpellsResponse, options));
+
+	foreach (var spell in gameSpellsResponse)
+	{
+		Console.WriteLine($"{spell.name} ({spell.id}) {spell.level_req} {spell.mana_cost}");
+		Console.WriteLine($"{spell.description}");
+		Console.WriteLine($"{spell.cooldown}");
+		Console.WriteLine($"{spell.targetType}");
+		Console.WriteLine($"{spell.effectType}");
+		Console.WriteLine($"{spell.effectValue}");
+		Console.WriteLine($"{spell.damageType}");
+		Console.WriteLine($"{spell.spellClass}");
+		//Console.WriteLine($"{spell.statusEffect}");
+	}
 }
 );
 
