@@ -100,23 +100,21 @@ commands["create"] = ("Create character", async () =>
 	}
 	Console.WriteLine("Name");
 	var name = Console.ReadLine();
-	Console.WriteLine("Race"); // TODO: validation
-	Console.WriteLine("human, elf, dwarf, halfling, orc");
-	var race = Console.ReadLine();
-	Console.WriteLine("Class"); // TODO: validation
-	Console.WriteLine("warrior, mage, rogue, cleric, ranger");
-	var @class = Console.ReadLine();
-	Console.WriteLine("STR"); // TODO: validation
+	Console.WriteLine("Race");
+	var race = ReadValidatedInput(["human", "elf", "dwarf", "halfling", "orc"]);
+	Console.WriteLine("Class");
+	var @class = ReadValidatedInput(["warrior", "mage", "rogue", "cleric", "ranger"]);
+	Console.WriteLine("STR"); // TODO: validation - ReadValidatedIntInput
 	var str = Console.ReadLine();
-	Console.WriteLine("DEX"); // TODO: validation
+	Console.WriteLine("DEX"); // TODO: validation - ReadValidatedIntInput
 	var dex = Console.ReadLine();
-	Console.WriteLine("CON"); // TODO: validation
+	Console.WriteLine("CON"); // TODO: validation - ReadValidatedIntInput
 	var con = Console.ReadLine();
-	Console.WriteLine("INT"); // TODO: validation
+	Console.WriteLine("INT"); // TODO: validation - ReadValidatedIntInput
 	var intl = Console.ReadLine();
-	Console.WriteLine("WIS"); // TODO: validation
+	Console.WriteLine("WIS"); // TODO: validation - ReadValidatedIntInput
 	var wis = Console.ReadLine();
-	Console.WriteLine("CHA"); // TODO: validation
+	Console.WriteLine("CHA"); // TODO: validation - ReadValidatedIntInput
 	var cha = Console.ReadLine();
 	var createCharacter = new CreateCharacterDto();
 	createCharacter.Name = name;
@@ -365,11 +363,11 @@ commands["combatstatus"] = ("Get combat status", async () =>
 	var combatStatusResponse = await Get<CombatStatus>(Constants.CombatStatus, token);
 	if (combatStatusResponse.inCombat)
 	{
-		//TODO:
-		//Console.WriteLine($"{combatStatusResponse.turn}");
-		//Console.WriteLine($"{combatStatusResponse.player}");
-		//Console.WriteLine($"{combatStatusResponse.monster}");
-		//Console.WriteLine($"{combatStatusResponse.source}");
+		Console.WriteLine($"In combat ({combatStatusResponse.source}) turn {combatStatusResponse.turn}");
+		Console.WriteLine($"  Player:");
+		Console.WriteLine($"    HP: {combatStatusResponse.player.hp} / {combatStatusResponse.player.maxHp}, AC: {combatStatusResponse.player.ac}");
+		Console.WriteLine($"  Monster: {combatStatusResponse.monster.name} ({combatStatusResponse.monster.id})");
+		Console.WriteLine($"    HP: {combatStatusResponse.monster.hp} / {combatStatusResponse.monster.maxHp}, AC: {combatStatusResponse.monster.ac}");
 		foreach (var log in combatStatusResponse.log)
 		{
 			Console.WriteLine(log);
@@ -407,7 +405,6 @@ commands["combataction"] = ("Combat action (attack, cast, use_item, flee)", asyn
 		Console.WriteLine(combatActionResponse.monster.name);
 		Console.WriteLine($"{combatActionResponse.monster.hp} / {combatActionResponse.monster.maxHp} [AC: {combatActionResponse.monster.ac}]");
 	}
-	Console.WriteLine(combatActionResponse);
 }
 );
 
@@ -543,9 +540,7 @@ commands["equip"] = ("Equip an item", async () =>
 	Console.WriteLine("itemid");
 	var itemidEquip = Console.ReadLine();
 	Console.WriteLine("slot");
-	//TODO: ReadValidatedInput
-	Console.WriteLine("weapon, armor, helmet, shield, leggings, boots, ring1, ring1, ring2, amulet");
-	var slot = Console.ReadLine();
+	var slot = ReadValidatedInput(["weapon", "armor", "helmet", "shield", "leggings", "boots", "gloves", "ring1", "ring2", "amulet"]);
 	var equip = new Equip();
 	equip.itemId = itemidEquip;
 	equip.slot = slot;
@@ -780,8 +775,28 @@ commands["questavailable"] = ("List available quests (at current town)", async (
 		return;
 	}
 	var questAvailableResponse = await Get<AvailableQuestsResponse>(Constants.QuestAvailable, token);
-	//TODO:
-	Console.WriteLine(questAvailableResponse);
+	foreach (var quest in questAvailableResponse.quests)
+	{
+		Console.WriteLine($"{quest.name} ({quest.id})");
+		Console.WriteLine($"  {quest.description}");
+		Console.WriteLine($"  Level {quest.levelMin}-{quest.levelMax}");
+		foreach (var objective in quest.objectives)
+		{
+			Console.WriteLine($"  {objective.type}");
+			Console.WriteLine($"  {objective.description}");
+			Console.WriteLine($"  {objective.target}");
+			Console.WriteLine($"  {objective.required}");
+			Console.WriteLine($"  {objective.quantity}");
+			//Console.WriteLine($"  {objective.current}");
+		}
+		Console.WriteLine($"  XP: {quest.rewards.xp}");
+		Console.WriteLine($"  Gold: {quest.rewards.gold}");
+		foreach (var item in quest.rewards.items)
+		{
+			Console.WriteLine($"  {item.itemId} {item.quantity}x");
+		}
+		
+	}
 }
 );
 
@@ -827,8 +842,7 @@ commands["questaccept"] = ("Accept quest", async () =>
 	acceptQuest.questId = acceptQuestId;
 	jsonString = JsonSerializer.Serialize(acceptQuest, options);
 	var acceptQuestResponse = await Post<AcceptQuestResponse>(jsonString, Constants.QuestAccept, token);
-	//TODO:
-	Console.WriteLine(acceptQuestResponse);
+	Console.WriteLine(acceptQuestResponse.message);
 }
 );
 
@@ -862,9 +876,8 @@ commands["questabandon"] = ("Abandon a quest", async () =>
 	var abandonQuest = new AbandonQuest();
 	abandonQuest.questId = abandonQuestId;
 	jsonString = JsonSerializer.Serialize(abandonQuest, options);
-	var abandonQuestResponse = await Post<AbandonQuestResponse>(jsonString, Constants.QuestAbandon, token);
-	//TODO:
-	Console.WriteLine(abandonQuestResponse);
+	var abandonQuestResponse = await Post<AbandonQuestResponse>(jsonString, Constants.QuestAbandon, token);	
+	Console.WriteLine(abandonQuestResponse.message);
 }
 );
 
@@ -1212,6 +1225,19 @@ string ReadValidatedInput(string[] validoptions)
 		response = Console.ReadLine();
 	}
 	return response;
+}
+
+int ReadValidatedIntInput(int min, int max)
+{
+	Console.Write(">");
+	var response = Console.ReadLine();
+	while (Int32.TryParse(response, out var value) && value <= min && value <= max)
+	{
+		Console.WriteLine($"Invalid response. Valid range {min}-{max}");
+		Console.Write(">");
+		response = Console.ReadLine();
+	}
+	return Convert.ToInt32(response);
 }
 
 file static class TerrainGlyph
