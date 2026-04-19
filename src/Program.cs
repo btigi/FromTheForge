@@ -104,18 +104,19 @@ commands["create"] = ("Create character", async () =>
 	var race = ReadValidatedInput(["human", "elf", "dwarf", "halfling", "orc"]);
 	Console.WriteLine("Class");
 	var @class = ReadValidatedInput(["warrior", "mage", "rogue", "cleric", "ranger"]);
-	Console.WriteLine("STR"); // TODO: validation - ReadValidatedIntInput
-	var str = Console.ReadLine();
-	Console.WriteLine("DEX"); // TODO: validation - ReadValidatedIntInput
-	var dex = Console.ReadLine();
-	Console.WriteLine("CON"); // TODO: validation - ReadValidatedIntInput
-	var con = Console.ReadLine();
-	Console.WriteLine("INT"); // TODO: validation - ReadValidatedIntInput
-	var intl = Console.ReadLine();
-	Console.WriteLine("WIS"); // TODO: validation - ReadValidatedIntInput
-	var wis = Console.ReadLine();
-	Console.WriteLine("CHA"); // TODO: validation - ReadValidatedIntInput
-	var cha = Console.ReadLine();
+	Console.WriteLine("STR");
+	var str = ReadValidatedIntInput(8, 15);
+	Console.WriteLine("DEX");
+	var dex = ReadValidatedIntInput(8, 15);
+	Console.WriteLine("CON");
+	var con = ReadValidatedIntInput(8, 15);
+	Console.WriteLine("INT");
+	var intl = ReadValidatedIntInput(8, 15);
+	Console.WriteLine("WIS");
+	var wis = ReadValidatedIntInput(8, 15);
+	Console.WriteLine("CHA");
+	var cha = ReadValidatedIntInput(8, 15);
+	//TODO: point buy validation?
 	var createCharacter = new CreateCharacterDto();
 	createCharacter.Name = name;
 	createCharacter.RaceId = race;
@@ -203,16 +204,24 @@ commands["go"] = ("Pathfind to coordinates", async () =>
 		return;
 	}
 	Console.WriteLine("X coordinate");
-	var x = Console.ReadLine();
+	var x = ReadValidatedIntInput(0, 100);
 	Console.WriteLine("Y coordinate");
-	var y = Console.ReadLine();
+	var y = ReadValidatedIntInput(0, 100);
 	var go = new GoDto();
 	go.x = Convert.ToInt32(x);
 	go.y = Convert.ToInt32(y);
 	jsonString = JsonSerializer.Serialize(go, options);
 	var goResponse = await Post<GoResponseDto>(jsonString, Constants.Go, token);
-	Console.WriteLine($"Started at {goResponse.startedAt}, eta {goResponse.eta}");
-	Console.WriteLine($"Moving {goResponse.totalCells} cells in {goResponse.travelSeconds} seconds");
+	if (String.IsNullOrEmpty(goResponse.error))
+	{
+		Console.WriteLine($"Started at {goResponse.startedAt}, eta {goResponse.eta}");
+		Console.WriteLine($"Moving {goResponse.totalCells} cells in {goResponse.travelSeconds} seconds");
+	}
+	else
+	{
+		Console.WriteLine($"Error {goResponse.error}");
+		Console.WriteLine($"{goResponse.message}");
+	}
 }
 );
 
@@ -1249,7 +1258,7 @@ int ReadValidatedIntInput(int min, int max)
 {
 	Console.Write(">");
 	var response = Console.ReadLine();
-	while (Int32.TryParse(response, out var value) && value <= min && value <= max)
+	while (!(Int32.TryParse(response, out var value) && value >= min && value <= max))
 	{
 		Console.WriteLine($"Invalid response. Valid range {min}-{max}");
 		Console.Write(">");
