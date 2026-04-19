@@ -4,6 +4,7 @@
 	public static string Login = "/api/auth/login";
 	public static string Me = "/api/auth/me";
 	public static string CreateCharacter = "/api/characters";
+	public static string Allocate = "api/characters/allocate-stat";
 	public static string GetCharacter = "/api/characters/me";
 	public static string Travel = "/api/travel/move";
 	public static string Go = "/api/travel/go";

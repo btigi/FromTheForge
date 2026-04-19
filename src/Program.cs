@@ -159,7 +159,16 @@ commands["allocate"] = ("Placeholder: allocate stat point on level up", async ()
 		Console.WriteLine("You must be logged in to use this command.");
 		return;
 	}
-	Console.WriteLine("Allocate a stat point (gained on level up)");
+	Console.WriteLine("Stat");
+	Console.WriteLine("strength, dexterity, constitution, intelligence, wisdom, charisma");
+
+	var stat = Console.ReadLine();
+	var allocate = new Allocate();
+	allocate.stat = stat;
+	jsonString = JsonSerializer.Serialize(allocate, options);
+	var allocateResponse = await Post<AllocateResponse>(jsonString, Constants.Allocate, token);
+	Console.WriteLine(JsonSerializer.Serialize(allocateResponse, options));
+	//TODO:
 }
 );
 
@@ -176,7 +185,10 @@ commands["travel"] = ("Move one step (north/east/south/west)", async () =>
 	var travel = new TravelDto();
 	travel.Direction = direction;
 	jsonString = JsonSerializer.Serialize(travel, options);
-	await Post<TravelResponseDto>(jsonString, Constants.Travel, token);
+	var travelResponse = await Post<TravelResponseDto>(jsonString, Constants.Travel, token);
+	Console.WriteLine($"Terrain {travelResponse.terrain}");
+	Console.WriteLine($"Moving from [{travelResponse.from.x},{travelResponse.from.y}] to [{travelResponse.destination.x},{travelResponse.destination.y}]");
+	Console.WriteLine($"Started at {travelResponse.startedAt}, eta {travelResponse.eta} {travelResponse.travelSeconds} seconds");
 }
 );
 
@@ -197,7 +209,6 @@ commands["go"] = ("Pathfind to coordinates", async () =>
 	jsonString = JsonSerializer.Serialize(go, options);
 	var goResponse = await Post<GoResponseDto>(jsonString, Constants.Go, token);
 	Console.WriteLine($"Moving {goResponse.totalCells} cells in {goResponse.travelSeconds} seconds");
-	//Console.WriteLine(goResponse);
 }
 );
 
@@ -209,7 +220,18 @@ commands["travelstatus"] = ("Get travel status", async () =>
 		return;
 	}
 	var travelStatusResponse = await Get<TravelStatusResponseDto>(Constants.TravelStatus, token);
-	Console.WriteLine(travelStatusResponse);
+	if (travelStatusResponse.isTraveling)
+	{
+		Console.WriteLine($"[{travelStatusResponse.position.x},{travelStatusResponse.position.y}] [{travelStatusResponse.destination.x},{travelStatusResponse.destination.y}]");
+		Console.WriteLine($"[{travelStatusResponse.estimatedCurrent.x},{travelStatusResponse.estimatedCurrent.y}]");
+		Console.WriteLine($"{travelStatusResponse.progressIndex},{travelStatusResponse.totalCells}");
+		Console.WriteLine($"{travelStatusResponse.startedAt} {travelStatusResponse.eta}");
+		//TODO: discoveries, xp, encounter
+	}
+	else
+	{
+		Console.WriteLine("Not travelling");
+	}
 }
 );
 
@@ -221,7 +243,22 @@ commands["travelcancel"] = ("Cancel active travel", async () =>
 		return;
 	}
 	var travelCancelResponse = await Post<TravelCancelResponseDto>(string.Empty, Constants.TravelCancel, token);
-	Console.WriteLine(travelCancelResponse);
+	if (travelCancelResponse.cancelled)
+	{
+		Console.WriteLine("Travel cancelled");
+	}
+	Console.WriteLine(travelCancelResponse.cellsTraversed);
+	Console.WriteLine($"[{travelCancelResponse.position.x},{travelCancelResponse.position.y}]");
+	//Console.WriteLine(travelCancelResponse.xp);
+	if ((travelCancelResponse.discoveries?.Length ?? 0) > 0)
+	{
+		foreach (var discovery in travelCancelResponse.discoveries)
+		{
+			Console.WriteLine($"{discovery.name} [{discovery.x},{discovery.y}]");
+			Console.WriteLine($"  {discovery.description}");
+			Console.WriteLine($"  {discovery.category} {discovery.type} {discovery.level_min}-{discovery.level_max}");
+		}
+	}
 }
 );
 
@@ -232,23 +269,51 @@ commands["map"] = ("Get world map", async () =>
 		Console.WriteLine("You must be logged in to use this command.");
 		return;
 	}
+
+	Console.WriteLine("map, pois, discoveries");
+	var submap = Console.ReadLine();
+
 	var mapResponse = await Get<MapResponseDto>(Constants.Map, token);
-	if (mapResponse?.terrain != null)
+
+	if (submap == "map")
 	{
-		foreach (var row in mapResponse.terrain)
+		if (mapResponse?.terrain != null)
 		{
-			if (row != null)
+			foreach (var row in mapResponse.terrain)
 			{
-				var existingColour = Console.ForegroundColor;
-				foreach (var cell in row)
+				if (row != null)
 				{
-					var terrainInfo = TerrainGlyph.FromTerrain(cell);
-					Console.ForegroundColor = terrainInfo.Item2;
-					Console.Write(terrainInfo.Item1);
+					var existingColour = Console.ForegroundColor;
+					foreach (var cell in row)
+					{
+						var terrainInfo = TerrainGlyph.FromTerrain(cell);
+						Console.ForegroundColor = terrainInfo.Item2;
+						Console.Write(terrainInfo.Item1);
+					}
+					Console.ForegroundColor = existingColour;
 				}
-				Console.ForegroundColor = existingColour;
+				Console.WriteLine();
 			}
-			Console.WriteLine();
+		}
+	}
+
+	if (submap == "pois")
+	{
+		foreach (var poi in mapResponse.pois)
+		{
+			Console.WriteLine($"{poi.name} [{poi.x},{poi.y}]");
+			Console.WriteLine($"  {poi.description}");
+			Console.WriteLine($"  {poi.category} {poi.type} {poi.level_min}-{poi.level_max}");
+		}
+	}
+
+	if (submap == "discoveries")
+	{
+		foreach (var discovery in mapResponse.discoveries)
+		{
+			Console.WriteLine($"{discovery.name} [{discovery.x},{discovery.y}]");
+			Console.WriteLine($"  {discovery.description}");
+			Console.WriteLine($"  {discovery.category} {discovery.type} {discovery.level_min}-{discovery.level_max}");
 		}
 	}
 }
@@ -262,7 +327,11 @@ commands["regions"] = ("List map regions", async () =>
 		return;
 	}
 	var regionsResponse = await Get<Region[]>(Constants.Regions, token);
-	Console.WriteLine(regionsResponse);
+	foreach (var region in regionsResponse)
+	{
+		Console.WriteLine($"{region.name} [{region.centerX},{region.centerY}]");
+		Console.WriteLine($"  {region.description}");
+	}
 }
 );
 
@@ -278,7 +347,13 @@ commands["mapdetail"] = ("Cell detail at x,y", async () =>
 	Console.WriteLine("Y coordinate");
 	var yMapDetail = Console.ReadLine();
 	var mapDetailResponse = await Get<MapDetailResponseDto>($"{Constants.MapDetail}/{xMapDetail}/{yMapDetail}", token);
-	Console.WriteLine(mapDetailResponse);
+	Console.WriteLine(mapDetailResponse.terrain);
+	if (mapDetailResponse.poi != null)
+	{
+		Console.WriteLine($"{mapDetailResponse.poi.name} [{mapDetailResponse.poi.x},{mapDetailResponse.poi.y}]");
+		Console.WriteLine($"  {mapDetailResponse.poi.description}");
+		Console.WriteLine($"  {mapDetailResponse.poi.category} {mapDetailResponse.poi.type} {mapDetailResponse.poi.level_min}-{mapDetailResponse.poi.level_max}");
+	}
 }
 );
 
@@ -290,7 +365,22 @@ commands["combatstatus"] = ("Get combat status", async () =>
 		return;
 	}
 	var combatStatusResponse = await Get<CombatStatus>(Constants.CombatStatus, token);
-	Console.WriteLine(combatStatusResponse);
+	if (combatStatusResponse.inCombat)
+	{
+		//TODO:
+		//Console.WriteLine($"{combatStatusResponse.turn}");
+		//Console.WriteLine($"{combatStatusResponse.player}");
+		//Console.WriteLine($"{combatStatusResponse.monster}");
+		//Console.WriteLine($"{combatStatusResponse.source}");
+		foreach (var log in combatStatusResponse.log)
+		{
+			Console.WriteLine(log);
+		}
+	}
+	else
+	{
+		Console.WriteLine("Not in combat");
+	}
 }
 );
 
@@ -304,7 +394,7 @@ commands["combataction"] = ("Combat action (attack, cast, use_item, flee)", asyn
 	Console.WriteLine("action");
 	Console.WriteLine("  attack, cast, use_item, flee");
 	var combatActionInfo = Console.ReadLine();
-
+	//TODO: case, use_item
 	var combatAction = new CombatAction();
 	combatAction.action = combatActionInfo;
 
@@ -331,13 +421,80 @@ commands["inventory"] = ("Get inventory", async () =>
 		Console.WriteLine("You must be logged in to use this command.");
 		return;
 	}
+
+	Console.WriteLine("equipment, backpack");
+	var subinventory = Console.ReadLine();
+
 	var inventoryResponse = await Get<Inventory>(Constants.Inventory, token);
 	if (inventoryResponse == null)
 	{
 		Console.WriteLine("(No inventory / request failed)");
 		return;
 	}
-	Console.WriteLine(JsonSerializer.Serialize(inventoryResponse, options));
+
+	Console.WriteLine($"{inventoryResponse.carryWeight}lbs / {inventoryResponse.carryCapacity}lbs");
+
+	if (subinventory == "equipment")
+	{
+		if (inventoryResponse.equipment.weapon != null)
+		{
+			Console.WriteLine($"{inventoryResponse.equipment.weapon.name} ({inventoryResponse.equipment.weapon.id}) {inventoryResponse.equipment.weapon.type} {inventoryResponse.equipment.weapon.rarity}");
+		}
+
+		if (inventoryResponse.equipment.armor != null)
+		{
+			Console.WriteLine($"{inventoryResponse.equipment.armor.name} ({inventoryResponse.equipment.armor.id}) {inventoryResponse.equipment.armor.type} {inventoryResponse.equipment.armor.rarity}");
+		}
+
+		if (inventoryResponse.equipment.helmet != null)
+		{
+			Console.WriteLine($"{inventoryResponse.equipment.helmet.name} ({inventoryResponse.equipment.helmet.id}) {inventoryResponse.equipment.helmet.type} {inventoryResponse.equipment.helmet.rarity}");
+		}
+
+		if (inventoryResponse.equipment.shield != null)
+		{
+			Console.WriteLine($"{inventoryResponse.equipment.shield.name} ({inventoryResponse.equipment.shield.id}) {inventoryResponse.equipment.shield.type} {inventoryResponse.equipment.shield.rarity}");
+		}
+
+		if (inventoryResponse.equipment.leggings != null)
+		{
+			Console.WriteLine($"{inventoryResponse.equipment.leggings.name} ({inventoryResponse.equipment.leggings.id}) {inventoryResponse.equipment.leggings.type} {inventoryResponse.equipment.leggings.rarity}");
+		}
+
+		if (inventoryResponse.equipment.boots != null)
+		{
+			Console.WriteLine($"{inventoryResponse.equipment.boots.name} ({inventoryResponse.equipment.boots.id}) {inventoryResponse.equipment.boots.type} {inventoryResponse.equipment.boots.rarity}");
+		}
+
+		if (inventoryResponse.equipment.ring1 != null)
+		{
+			Console.WriteLine($"{inventoryResponse.equipment.ring1.name} ({inventoryResponse.equipment.ring1.id}) {inventoryResponse.equipment.ring1.type} {inventoryResponse.equipment.ring1.rarity}");
+		}
+
+		if (inventoryResponse.equipment.ring1 != null)
+		{
+			Console.WriteLine($"{inventoryResponse.equipment.ring1.name} ({inventoryResponse.equipment.ring1.id}) {inventoryResponse.equipment.ring1.type} {inventoryResponse.equipment.ring1.rarity}");
+		}
+
+		if (inventoryResponse.equipment.ring2 != null)
+		{
+			Console.WriteLine($"{inventoryResponse.equipment.ring2.name} ({inventoryResponse.equipment.ring2.id}) {inventoryResponse.equipment.ring2.type} {inventoryResponse.equipment.ring2.rarity}");
+		}
+
+		if (inventoryResponse.equipment.amulet != null)
+		{
+			Console.WriteLine($"{inventoryResponse.equipment.amulet.name} ({inventoryResponse.equipment.amulet.id}) {inventoryResponse.equipment.amulet.type} {inventoryResponse.equipment.amulet.rarity}");
+		}
+	}
+
+	if (subinventory == "backpack")
+	{
+		foreach (var item in inventoryResponse.backpack)
+		{
+			Console.WriteLine($"{item.name} ({item.itemId}) x{item.quantity} {item.weight}lbs");
+			Console.WriteLine($"Type: {item.type} Rarity: ({item.rarity}) Level required: {item.levelRequired} Class restriction: {item.classRestriction}");
+		}
+	}
 }
 );
 
@@ -357,7 +514,7 @@ commands["pickup"] = ("Pick up an item", async () =>
 	pickup.quantity = Convert.ToInt32(quantity);
 	jsonString = JsonSerializer.Serialize(pickup, options);
 	var pickupResponse = await Post<PickupResponse>(jsonString, Constants.Pickup, token);
-	Console.WriteLine(pickupResponse);
+	Console.WriteLine(pickupResponse.message);
 }
 );
 
@@ -377,7 +534,7 @@ commands["drop"] = ("Drop an item", async () =>
 	drop.quantity = Convert.ToInt32(quantityDropped);
 	jsonString = JsonSerializer.Serialize(drop, options);
 	var droppedResponse = await Post<DropResponse>(jsonString, Constants.Drop, token);
-	Console.WriteLine(droppedResponse);
+	Console.WriteLine(droppedResponse.message);
 }
 );
 
@@ -391,14 +548,18 @@ commands["equip"] = ("Equip an item", async () =>
 	Console.WriteLine("itemid");
 	var itemidEquip = Console.ReadLine();
 	Console.WriteLine("slot");
-	Console.WriteLine("weapon, armor, helmet, shield, leggings, boots, gloves, ring1, ring2, amulet");
+	Console.WriteLine("weapon, armor, helmet, shield, leggings, boots, ring1, ring1, ring2, amulet");
 	var slot = Console.ReadLine();
 	var equip = new Equip();
 	equip.itemId = itemidEquip;
 	equip.slot = slot;
 	jsonString = JsonSerializer.Serialize(equip, options);
 	var equipResponse = await Post<EquipResponse>(jsonString, Constants.Equip, token);
-	Console.WriteLine(equipResponse);
+	Console.WriteLine(equipResponse.message);
+	if (equipResponse.unequipped != null)
+	{
+		Console.WriteLine(equipResponse.unequipped.item.itemId);
+	}
 }
 );
 
@@ -410,13 +571,13 @@ commands["unequip"] = ("Unequip slot", async () =>
 		return;
 	}
 	Console.WriteLine("slot");
-	Console.WriteLine("weapon, armor, helmet, shield, leggings, boots, gloves, ring1, ring2, amulet");
+	Console.WriteLine("weapon, armor, helmet, shield, leggings, boots, ring1, ring1, ring2, amulet");
 	var unequipslot = Console.ReadLine();
 	var unequip = new Unequip();
 	unequip.slot = unequipslot;
 	jsonString = JsonSerializer.Serialize(unequip, options);
 	var unequipResponse = await Post<UnequipResponse>(jsonString, Constants.Unequip, token);
-	Console.WriteLine(unequipResponse);
+	Console.WriteLine(unequipResponse.message);
 }
 );
 
@@ -433,6 +594,7 @@ commands["use"] = ("Use consumable", async () =>
 	use.itemId = useitem;
 	jsonString = JsonSerializer.Serialize(use, options);
 	var useResponse = await Post<UseResponse>(jsonString, Constants.Use, token);
+	//TODO:
 	Console.WriteLine(useResponse);
 }
 );
@@ -445,7 +607,12 @@ commands["spellbook"] = ("Get spellbook", async () =>
 		return;
 	}
 	var spellbookResponse = await Get<SpellbookResponse>(Constants.Spells, token);
-	Console.WriteLine(spellbookResponse);
+	Console.WriteLine($"{spellbookResponse.mana}/{spellbookResponse.maxMana}");
+	foreach (var spell in spellbookResponse.spells)
+	{
+		Console.WriteLine($"{spell.name} ({spell.id})");
+		Console.WriteLine($"  School: {spell.school} Level: {spell.spell_level} Mana: {spell.mana_cost}");
+	}
 }
 );
 
@@ -462,6 +629,7 @@ commands["spelllearn"] = ("Learn spell", async () =>
 	learnSpell.spellId = learnSpellId;
 	jsonString = JsonSerializer.Serialize(learnSpell, options);
 	var learnSpellResponse = await Post<LearnSpellResponse>(jsonString, Constants.SpellsLearn, token);
+	//TODO:
 	Console.WriteLine(learnSpellResponse);
 }
 );
@@ -479,6 +647,7 @@ commands["spellcast"] = ("Cast spell (out of combat)", async () =>
 	castSpell.spellId = castSpellId;
 	jsonString = JsonSerializer.Serialize(castSpell, options);
 	var castSpellResponse = await Post<CastSpellResponse>(jsonString, Constants.SpellsCast, token);
+	//TODO:
 	Console.WriteLine(castSpellResponse);
 }
 );
@@ -496,6 +665,7 @@ commands["restcamp"] = ("Start camping", async () =>
 	startCamp.duration = Convert.ToInt32(campDuration);
 	jsonString = JsonSerializer.Serialize(startCamp, options);
 	var startCampResponse = await Post<StartCampResponse>(jsonString, Constants.RestCamp, token);
+	//TODO:
 	Console.WriteLine(startCampResponse);
 }
 );
@@ -508,6 +678,7 @@ commands["restinn"] = ("Rest at an inn", async () =>
 		return;
 	}
 	var innRestResponse = await Post<InnRestResponse>(string.Empty, Constants.RestInn, token);
+	//TODO:
 	Console.WriteLine(innRestResponse);
 }
 );
@@ -520,6 +691,7 @@ commands["reststatus"] = ("Get rest status", async () =>
 		return;
 	}
 	var restStatusResponse = await Get<RestStatus>(Constants.RestStatusPath, token);
+	//TODO:
 	Console.WriteLine(restStatusResponse);
 }
 );
@@ -532,6 +704,7 @@ commands["reststop"] = ("Stop resting", async () =>
 		return;
 	}
 	var stopRestResponse = await Post<StopRestResponse>(string.Empty, Constants.RestStop, token);
+	//TODO:
 	Console.WriteLine(stopRestResponse);
 }
 );
@@ -546,6 +719,7 @@ commands["shop"] = ("Shop inventory", async () =>
 	Console.WriteLine("townId");
 	var shopTownId = Console.ReadLine();
 	var shopResponse = await Get<ShopResponse>($"{Constants.Shops}/{shopTownId}", token);
+	//TODO:
 	Console.WriteLine(shopResponse);
 }
 );
@@ -569,6 +743,7 @@ commands["shopbuy"] = ("Buy items", async () =>
 	buyItem.quantity = buyQty;
 	jsonString = JsonSerializer.Serialize(buyItem, options);
 	var buyResponse = await Post<BuyItemResponse>(jsonString, $"{Constants.Shops}/{buyTownId}/buy", token);
+	//TODO:
 	Console.WriteLine(buyResponse);
 }
 );
@@ -592,6 +767,7 @@ commands["shopsell"] = ("Sell items", async () =>
 	sellItem.quantity = sellQty;
 	jsonString = JsonSerializer.Serialize(sellItem, options);
 	var sellResponse = await Post<SellItemResponse>(jsonString, $"{Constants.Shops}/{sellTownId}/sell", token);
+	//TODO:
 	Console.WriteLine(sellResponse);
 }
 );
@@ -732,7 +908,7 @@ commands["gatheringskills"] = ("Gathering skill levels", async () =>
 		return;
 	}
 	var gatheringSkillsResponse = await Get<GatheringSkillsResponse>(Constants.GatheringSkills, token);
-	Console.WriteLine(gatheringSkillsResponse);
+	Console.WriteLine(JsonSerializer.Serialize(gatheringSkillsResponse, options));
 }
 );
 
@@ -769,7 +945,7 @@ commands["gatheringharvest"] = ("Harvest node", async () =>
 	harvest.nodeId = harvestNodeId;
 	jsonString = JsonSerializer.Serialize(harvest, options);
 	var harvestResponse = await Post<HarvestResponse>(jsonString, Constants.GatheringHarvest, token);
-	Console.WriteLine(harvestResponse);
+	Console.WriteLine(JsonSerializer.Serialize(harvestResponse, options));
 }
 );
 
@@ -859,14 +1035,14 @@ commands["gameclasses"] = ("Game data: all classes", async () =>
 commands["gameitems"] = ("Game data: all items", async () =>
 {
 	var gameItemsResponse = await Get<GameItemDef[]>(Constants.GameItems, token);
-	Console.WriteLine(gameItemsResponse);
+	Console.WriteLine(JsonSerializer.Serialize(gameItemsResponse, options));
 }
 );
 
 commands["gamespells"] = ("Game data: all spells", async () =>
 {
 	var gameSpellsResponse = await Get<GameSpellDef[]>(Constants.GameSpells, token);
-	Console.WriteLine(gameSpellsResponse);
+	Console.WriteLine(JsonSerializer.Serialize(gameSpellsResponse, options));
 }
 );
 
