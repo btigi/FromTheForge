@@ -741,8 +741,24 @@ commands["shop"] = ("Shop inventory", async () =>
 	Console.WriteLine("townId");
 	var shopTownId = Console.ReadLine();
 	var shopResponse = await Get<ShopResponse>($"{Constants.Shops}/{shopTownId}", token);
-	//TODO:
-	Console.WriteLine(shopResponse);
+	if (String.IsNullOrEmpty(shopResponse.error))
+	{
+		Console.WriteLine($"{shopResponse.shop}");
+		Console.WriteLine($"{shopResponse.description} Restock: {shopResponse.restockMinutes}m Gold: {shopResponse.gold}");
+		foreach (var item in shopResponse.items)
+		{
+			Console.WriteLine($"  {item.name} ({item.id})");
+			Console.WriteLine($"    {item.type} {item.rarity}");
+			Console.WriteLine($"    Price: {item.price} Sell price: {item.sellPrice}");
+			Console.WriteLine($"    Level required: {item.levelRequired} Class restriction: {item.classRestriction}");
+			Console.WriteLine($"    {item.weight}lbs Stock: {item.stock}/{item.maxStock}");
+		}
+	}
+	else
+	{
+		Console.WriteLine($"Error {shopResponse.error}");
+		Console.WriteLine($"{shopResponse.message}");
+	}
 }
 );
 

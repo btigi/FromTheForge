@@ -8,7 +8,7 @@
 	public int sellPrice { get; set; }
 	public int levelRequired { get; set; }
 	public string classRestriction { get; set; }
-	public string weight { get; set; }
+	public float weight { get; set; }	
 	public int stock { get; set; }
 	public int maxStock { get; set; }
 }
