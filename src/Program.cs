@@ -160,9 +160,7 @@ commands["allocate"] = ("Placeholder: allocate stat point on level up", async ()
 		return;
 	}
 	Console.WriteLine("Stat");
-	Console.WriteLine("strength, dexterity, constitution, intelligence, wisdom, charisma");
-
-	var stat = Console.ReadLine();
+	var stat = ReadValidatedInput(["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"]);
 	var allocate = new Allocate();
 	allocate.stat = stat;
 	jsonString = JsonSerializer.Serialize(allocate, options);
@@ -180,8 +178,7 @@ commands["travel"] = ("Move one step (north/east/south/west)", async () =>
 		return;
 	}
 	Console.WriteLine("Direction");
-	Console.WriteLine("north, east, south, west");
-	var direction = Console.ReadLine();
+	var direction = ReadValidatedInput(["north", "east", "south", "west"]);
 	var travel = new TravelDto();
 	travel.Direction = direction;
 	jsonString = JsonSerializer.Serialize(travel, options);
@@ -271,8 +268,8 @@ commands["map"] = ("Get world map", async () =>
 		return;
 	}
 
-	Console.WriteLine("map, pois, discoveries");
-	var submap = Console.ReadLine();
+	Console.WriteLine("Map command");
+	var submap = ReadValidatedInput(["map", "pois", "discoveries"]);
 
 	var mapResponse = await Get<MapResponseDto>(Constants.Map, token);
 
@@ -393,8 +390,7 @@ commands["combataction"] = ("Combat action (attack, cast, use_item, flee)", asyn
 		return;
 	}
 	Console.WriteLine("action");
-	Console.WriteLine("  attack, cast, use_item, flee");
-	var combatActionInfo = Console.ReadLine();
+	var combatActionInfo = ReadValidatedInput(["attack", "cast", "use_item", "flee"]);
 	//TODO: case, use_item
 	var combatAction = new CombatAction();
 	combatAction.action = combatActionInfo;
@@ -422,9 +418,7 @@ commands["inventory"] = ("Get inventory", async () =>
 		Console.WriteLine("You must be logged in to use this command.");
 		return;
 	}
-
-	Console.WriteLine("equipment, backpack");
-	var subinventory = Console.ReadLine();
+	var subinventory = ReadValidatedInput(["equipment", "backpack"]);
 
 	var inventoryResponse = await Get<Inventory>(Constants.Inventory, token);
 	if (inventoryResponse == null)
@@ -549,6 +543,7 @@ commands["equip"] = ("Equip an item", async () =>
 	Console.WriteLine("itemid");
 	var itemidEquip = Console.ReadLine();
 	Console.WriteLine("slot");
+	//TODO: ReadValidatedInput
 	Console.WriteLine("weapon, armor, helmet, shield, leggings, boots, ring1, ring1, ring2, amulet");
 	var slot = Console.ReadLine();
 	var equip = new Equip();
@@ -572,8 +567,7 @@ commands["unequip"] = ("Unequip slot", async () =>
 		return;
 	}
 	Console.WriteLine("slot");
-	Console.WriteLine("weapon, armor, helmet, shield, leggings, boots, ring1, ring1, ring2, amulet");
-	var unequipslot = Console.ReadLine();
+	var unequipslot = ReadValidatedInput(["weapon", "armor", "helmet", "shield", "leggings", "boots", "gloves", "ring1", "ring2", "amulet"]);
 	var unequip = new Unequip();
 	unequip.slot = unequipslot;
 	jsonString = JsonSerializer.Serialize(unequip, options);
@@ -882,7 +876,20 @@ commands["dungeonstatus"] = ("Dungeon status", async () =>
 		return;
 	}
 	var dungeonStatusResponse = await Get<DungeonStatus>(Constants.DungeonStatusPath, token);
-	//TODO:
+	if (dungeonStatusResponse.inDungeon)
+	{
+		Console.WriteLine($"{dungeonStatusResponse.poiName} ({dungeonStatusResponse.dungeonId}) {(dungeonStatusResponse.completed ? "Completed" : string.Empty)}");
+		Console.WriteLine($"{dungeonStatusResponse.poiName} ({dungeonStatusResponse.poiId})");
+		Console.WriteLine($"{dungeonStatusResponse.dungeonLevel} ({dungeonStatusResponse.rooms} / {dungeonStatusResponse.totalRooms})");
+		foreach (var room in dungeonStatusResponse.rooms)
+		{
+			//TODO:
+			//int index
+			//string type
+			//bool cleared
+			//string[] log
+		}
+	}
 	Console.WriteLine(dungeonStatusResponse);
 }
 );
@@ -978,7 +985,15 @@ commands["gatheringharvest"] = ("Harvest node", async () =>
 	jsonString = JsonSerializer.Serialize(harvest, options);
 	var harvestResponse = await Post<HarvestResponse>(jsonString, Constants.GatheringHarvest, token);
 	//TODO:
-	Console.WriteLine(JsonSerializer.Serialize(harvestResponse, options));
+	Console.WriteLine($"{harvestResponse.harvested} ({harvestResponse.itemId}) {harvestResponse.quantity}x");
+
+	//int xpGained { get; set; }
+	//string skill { get; set; }
+	//int skillLevel { get; set; }
+	//int skillXp { get; set; }
+	//int cooldownMinutes { get; set; }
+	//DateTime availableAt { get; set; }
+	//HarvestLevelUp levelUp { get; set; }
 }
 );
 
@@ -1005,6 +1020,7 @@ commands["craftingrecipes"] = ("Crafting recipes", async () =>
 	}
 	Console.WriteLine("skill filter (blacksmithing, alchemy, woodworking, blank for all)");
 	var craftingSkillFilter = Console.ReadLine();
+	//var craftingSkillFilter = ReadValidatedInput(["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"]);
 	var recipesUrl = string.IsNullOrWhiteSpace(craftingSkillFilter) ? Constants.CraftingRecipes : $"{Constants.CraftingRecipes}?skill={craftingSkillFilter}";
 	var craftingRecipesResponse = await Get<CraftingRecipesResponse>(recipesUrl, token);
 	//TODO:
@@ -1178,6 +1194,24 @@ async Task<T> Get<T>(string endpoint, string token = "")
 	{
 		return default;
 	}
+}
+
+string ReadValidatedInput(string[] validoptions)
+{
+	foreach (var option in validoptions)
+	{
+		Console.WriteLine($"  {option}");
+	}
+
+	Console.Write(">");
+	var response = Console.ReadLine();
+	while (validoptions != null && !validoptions.Contains(response))
+	{
+		Console.WriteLine($"Invalid response. Valid options: {string.Join(", ", validoptions)}");
+		Console.Write(">");
+		response = Console.ReadLine();
+	}
+	return response;
 }
 
 file static class TerrainGlyph
