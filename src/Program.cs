@@ -181,9 +181,17 @@ commands["travel"] = ("Move one step (north/east/south/west)", async () =>
 	travel.Direction = direction;
 	jsonString = JsonSerializer.Serialize(travel, options);
 	var travelResponse = await Post<TravelResponseDto>(jsonString, Constants.Travel, token);
-	Console.WriteLine($"Terrain {travelResponse.terrain}");
-	Console.WriteLine($"Moving from [{travelResponse.from.x},{travelResponse.from.y}] to [{travelResponse.destination.x},{travelResponse.destination.y}]");
-	Console.WriteLine($"Started at {travelResponse.startedAt}, eta {travelResponse.eta} {travelResponse.travelSeconds} seconds");
+	if (String.IsNullOrEmpty(travelResponse.error))
+	{
+		Console.WriteLine($"Terrain {travelResponse.terrain}");
+		Console.WriteLine($"Moving from [{travelResponse.from.x},{travelResponse.from.y}] to [{travelResponse.destination.x},{travelResponse.destination.y}]");
+		Console.WriteLine($"Started at {travelResponse.startedAt}, eta {travelResponse.eta} {travelResponse.travelSeconds} seconds");
+	}
+	else
+	{
+		Console.WriteLine($"Error {travelResponse.error}");
+		Console.WriteLine($"{travelResponse.message}");
+	}
 }
 );
 
@@ -686,8 +694,18 @@ commands["reststatus"] = ("Get rest status", async () =>
 		return;
 	}
 	var restStatusResponse = await Get<RestStatus>(Constants.RestStatusPath, token);
-	//TODO:
-	Console.WriteLine(restStatusResponse);
+	if (restStatusResponse.resting)
+	{
+		Console.WriteLine($"{restStatusResponse.type}");
+		Console.WriteLine($"{restStatusResponse.startedAt} {restStatusResponse.until}");
+		Console.WriteLine($"{restStatusResponse.elapsedSeconds} {restStatusResponse.totalDurationSeconds}");
+		Console.WriteLine($"Current: {restStatusResponse.currentHp}/{restStatusResponse.maxHp}HP, {restStatusResponse.currentMana}/{restStatusResponse.maxMana} mana");
+		Console.WriteLine($"Recovered: {restStatusResponse.recovered.hp}HP, {restStatusResponse.recovered.mana} mana");
+	}
+	else
+	{
+		Console.WriteLine($"Not resting");
+	}
 }
 );
 
@@ -795,7 +813,7 @@ commands["questavailable"] = ("List available quests (at current town)", async (
 		{
 			Console.WriteLine($"  {item.itemId} {item.quantity}x");
 		}
-		
+
 	}
 }
 );
@@ -876,7 +894,7 @@ commands["questabandon"] = ("Abandon a quest", async () =>
 	var abandonQuest = new AbandonQuest();
 	abandonQuest.questId = abandonQuestId;
 	jsonString = JsonSerializer.Serialize(abandonQuest, options);
-	var abandonQuestResponse = await Post<AbandonQuestResponse>(jsonString, Constants.QuestAbandon, token);	
+	var abandonQuestResponse = await Post<AbandonQuestResponse>(jsonString, Constants.QuestAbandon, token);
 	Console.WriteLine(abandonQuestResponse.message);
 }
 );
