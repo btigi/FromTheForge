@@ -1100,7 +1100,16 @@ commands["dungeonenter"] = ("Enter dungeon", async () =>
 	var enterDungeonResponse = await Post<DungeonStatus>(jsonString, Constants.DungeonEnter, token);	
 	if (String.IsNullOrEmpty(enterDungeonResponse.error))
 	{
-		//TODO: dungeonenter
+		Console.WriteLine($"{enterDungeonResponse.dungeonId} {enterDungeonResponse.poiName} ({enterDungeonResponse.poiId}) Completed: {enterDungeonResponse.completed}");
+		Console.WriteLine($"{enterDungeonResponse.dungeonLevel} Room {enterDungeonResponse.currentRoom} Total rooms: {enterDungeonResponse.totalRooms})");
+		foreach (var room in enterDungeonResponse.rooms)
+		{
+			Console.WriteLine($"Room index: {room.index} {room.type} Cleared {room.cleared}");
+			foreach (var log in room.log)
+			{
+				Console.WriteLine($"  {log}");
+			}
+		}
 	}
 	else
 	{
@@ -1120,7 +1129,30 @@ commands["dungeonadvance"] = ("Advance to next dungeon room", async () =>
 	var dungeonAdvanceResponse = await Post<DungeonAdvanceResponse>(string.Empty, Constants.DungeonAdvance, token);
 	if (String.IsNullOrEmpty(dungeonAdvanceResponse.error))
 	{
-		//TODO: dungeonadvance
+		Console.WriteLine($"  Room: {dungeonAdvanceResponse.roomIndex} {dungeonAdvanceResponse.roomType}");
+		Console.WriteLine($"  {dungeonAdvanceResponse.status}");
+		Console.WriteLine($"  {dungeonAdvanceResponse.message}");
+		Console.WriteLine($"  {dungeonAdvanceResponse.trapType}");
+		Console.WriteLine($"  {dungeonAdvanceResponse.avoided}");
+		Console.WriteLine($"  {dungeonAdvanceResponse.hp}/{dungeonAdvanceResponse.maxHp}HP {dungeonAdvanceResponse.mana}/{dungeonAdvanceResponse.maxMana}mana");
+
+		foreach (var log in dungeonAdvanceResponse.log)
+		{
+			Console.WriteLine(log);
+		}
+
+		Console.WriteLine($"  Reward");
+		Console.WriteLine($"  {dungeonAdvanceResponse.gold}");
+		foreach (var loot in dungeonAdvanceResponse.loot)
+		{
+			Console.WriteLine($"  {loot.itemId} {loot.quantity}x");
+		}
+
+		if (dungeonAdvanceResponse.recovered != null)
+		{
+			Console.WriteLine($"  Recovered");
+			Console.WriteLine($"  {dungeonAdvanceResponse.recovered.hp}HP {dungeonAdvanceResponse.recovered.mana}mana");
+		}
 	}
 	else {
 		Console.WriteLine($"Error {dungeonAdvanceResponse.error}");
