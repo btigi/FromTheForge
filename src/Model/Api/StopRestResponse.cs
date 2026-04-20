@@ -8,4 +8,8 @@
 	public int maxHp { get; set; }
 	public int mana { get; set; }
 	public int maxMana { get; set; }
+
+	public string error { get; set; }
+	public string message { get; set; }
+	public int statusCode { get; set; }
 }

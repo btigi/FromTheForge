@@ -8,4 +8,8 @@
 	public int skillLevel { get; set; }
 	public int skillXp { get; set; }
 	public HarvestLevelUp levelUp { get; set; }
+
+	public string error { get; set; }
+	public string message { get; set; }
+	public int statusCode { get; set; }
 }

@@ -7,4 +7,8 @@
 	public DateTime until { get; set; }
 	public Position position { get; set; }
 	public RestRecoveryAmount willRecover { get; set; }
+
+	public string error { get; set; }
+	public string message { get; set; }
+	public int statusCode { get; set; }
 }

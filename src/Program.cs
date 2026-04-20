@@ -129,8 +129,23 @@ commands["create"] = ("Create character", async () =>
 	createCharacter.Charisma = Convert.ToInt32(cha);
 	jsonString = JsonSerializer.Serialize(createCharacter, options);
 	var createCharacterResponse = await Post<CreateCharacterResponseDto>(jsonString, Constants.CreateCharacter, token);
-	//TODO: if error then show message
-	Console.WriteLine(createCharacterResponse);
+	if (String.IsNullOrEmpty(createCharacterResponse.Error))
+	{
+		Console.WriteLine($"Created character");
+		Console.WriteLine($"  {createCharacterResponse.name} {createCharacterResponse.race_id} {createCharacterResponse.class_id} [{createCharacterResponse.pos_x},{createCharacterResponse.pos_y}]");
+		Console.WriteLine($"  {createCharacterResponse.hp}/{createCharacterResponse.max_hp}HP {createCharacterResponse.mana}/{createCharacterResponse.max_mana}mana");
+		Console.WriteLine($"  {createCharacterResponse.ac} {createCharacterResponse.gold}");
+		Console.WriteLine($"  STR {createCharacterResponse.strength} DEX {createCharacterResponse.dexterity} CON {createCharacterResponse.constitution} INT {createCharacterResponse.intelligence} WIS {createCharacterResponse.wisdom} CHA {createCharacterResponse.charisma}");
+	}
+	else
+	{
+		Console.WriteLine($"Error {createCharacterResponse.Error}");
+		foreach (var message in createCharacterResponse.Message)
+		{
+			Console.WriteLine(message);
+		}
+		return;
+	}
 }
 );
 
@@ -238,7 +253,41 @@ commands["travelstatus"] = ("Get travel status", async () =>
 		Console.WriteLine($"Current [{travelStatusResponse.estimatedCurrent.x},{travelStatusResponse.estimatedCurrent.y}]");
 		Console.WriteLine($"Progress {travelStatusResponse.progressIndex} out of {travelStatusResponse.totalCells} cells");
 		Console.WriteLine($"{travelStatusResponse.startedAt} {travelStatusResponse.eta}");
-		//TODO: discoveries, xp, encounter
+		if (travelStatusResponse.discoveries != null)
+		{
+			foreach (var discovery in travelStatusResponse.discoveries)
+			{
+				Console.WriteLine($"{discovery.name} ({discovery.id}) {discovery.terrain} {discovery.type} {discovery.category} [{discovery.x},{discovery.y}]");
+				Console.WriteLine($"{discovery.description}");
+				Console.WriteLine($"{discovery.level_min}-{discovery.level_max}");
+				Console.WriteLine($"{discovery.discoveredAt}");
+			}
+		}
+		if (travelStatusResponse.xp != null)
+		{
+			Console.WriteLine($"{travelStatusResponse.xp.xpGained} {travelStatusResponse.xp.totalXp}");
+			if (travelStatusResponse.xp.levelUp != null)
+			{
+				Console.WriteLine($"{travelStatusResponse.xp.levelUp.newLevel}");
+				Console.WriteLine($"{travelStatusResponse.xp.levelUp.hpGained}");
+				Console.WriteLine($"{travelStatusResponse.xp.levelUp.manaGained}");
+				Console.WriteLine($"{travelStatusResponse.xp.levelUp.statPointsGained}");
+				if (travelStatusResponse.xp.levelUp.newSpells != null)
+				{
+					foreach (var spell in travelStatusResponse.xp.levelUp.newSpells)
+					{
+						Console.WriteLine($"{spell.name} ({spell.id}) {spell.manaCost}");
+					}
+				}
+			}
+		}
+		if (travelStatusResponse.encounter != null)
+		{
+			Console.WriteLine($"Encounter:");
+			Console.WriteLine($"  {travelStatusResponse.encounter.monsterName} ({travelStatusResponse.encounter.monsterId})");
+			Console.WriteLine($"  {travelStatusResponse.encounter.monsterLevel} {travelStatusResponse.encounter.monsterHp}/{travelStatusResponse.encounter.monsterMaxHp}HP");
+			Console.WriteLine($"  {travelStatusResponse.encounter.monsterType} {travelStatusResponse.encounter.source}");
+		}
 	}
 	else
 	{
@@ -405,10 +454,25 @@ commands["combataction"] = ("Combat action (attack, cast, use_item, flee)", asyn
 	}
 	Console.WriteLine("action");
 	var combatActionInfo = ReadValidatedInput(["attack", "cast", "use_item", "flee"]);
-	//TODO: case, use_item
 	var combatAction = new CombatAction();
 	combatAction.action = combatActionInfo;
 
+	var spell = string.Empty;
+	var item = string.Empty;
+	if (combatActionInfo == "cast")
+	{
+		Console.WriteLine("Spell:");
+		Console.Write(">");
+		spell = Console.ReadLine();
+	}
+	if (combatActionInfo == "use_item")
+	{
+		Console.WriteLine("Item:");
+		Console.Write(">");
+		item = Console.ReadLine();
+	}
+	combatAction.spellId = spell;
+	combatAction.itemId = item;
 	jsonString = JsonSerializer.Serialize(combatAction, options);
 	var combatActionResponse = await Post<CombatActionResult>(jsonString, Constants.CombatAction, token);
 	foreach (var log in combatActionResponse.log)
@@ -600,8 +664,23 @@ commands["use"] = ("Use consumable", async () =>
 	use.itemId = useitem;
 	jsonString = JsonSerializer.Serialize(use, options);
 	var useResponse = await Post<UseResponse>(jsonString, Constants.Use, token);
-	//TODO:
-	Console.WriteLine(useResponse);
+	if (!string.IsNullOrEmpty(useResponse.used))
+	{
+		Console.WriteLine(useResponse.used);
+		Console.WriteLine(useResponse.message);
+		Console.WriteLine(useResponse.result);
+		Console.WriteLine($"{useResponse.hp}/{useResponse.maxHp}HP");
+		Console.WriteLine($"{useResponse.mana}/{useResponse.maxMana}mana");
+		Console.WriteLine($"{useResponse.learned}");
+		if (useResponse.effect != null)
+		{
+			Console.WriteLine($"{useResponse.effect.type} {useResponse.effect.duration} {useResponse.effect.value} {useResponse.effect.source}");
+		}
+	}
+	else
+	{
+		Console.WriteLine(useResponse.message);
+	}
 }
 );
 
@@ -653,8 +732,21 @@ commands["spellcast"] = ("Cast spell (out of combat)", async () =>
 	castSpell.spellId = castSpellId;
 	jsonString = JsonSerializer.Serialize(castSpell, options);
 	var castSpellResponse = await Post<CastSpellResponse>(jsonString, Constants.SpellsCast, token);
-	//TODO:
-	Console.WriteLine(castSpellResponse);
+	if (String.IsNullOrEmpty(castSpellResponse.error))
+	{
+		Console.WriteLine($"{castSpellResponse.cast} {castSpellResponse.manaCost}");
+		Console.WriteLine($"{castSpellResponse.effect}");
+		Console.WriteLine($"{castSpellResponse.result}");
+		if (castSpellResponse.effect != null)
+		{
+			Console.WriteLine($"{castSpellResponse.effect.type} {castSpellResponse.effect.duration} {castSpellResponse.effect.value} {castSpellResponse.effect.source}");
+		}
+	}
+	else
+	{
+		Console.WriteLine($"Error {castSpellResponse.error}");
+		Console.WriteLine($"{castSpellResponse.message}");
+	}
 }
 );
 
@@ -671,12 +763,21 @@ commands["restcamp"] = ("Start camping", async () =>
 	startCamp.duration = Convert.ToInt32(campDuration);
 	jsonString = JsonSerializer.Serialize(startCamp, options);
 	var startCampResponse = await Post<StartCampResponse>(jsonString, Constants.RestCamp, token);
-	Console.WriteLine($"{startCampResponse.resting}");
-	Console.WriteLine($"{startCampResponse.type}");
-	Console.WriteLine($"{startCampResponse.startedAt} {startCampResponse.until}");
-	if (startCampResponse.willRecover != null)
+
+	if (String.IsNullOrEmpty(startCampResponse.error))
 	{
-		Console.WriteLine($"{startCampResponse.willRecover.hp} {startCampResponse.willRecover.mana}");
+		Console.WriteLine($"{startCampResponse.resting}");
+		Console.WriteLine($"{startCampResponse.type}");
+		Console.WriteLine($"{startCampResponse.startedAt} {startCampResponse.until}");
+		if (startCampResponse.willRecover != null)
+		{
+			Console.WriteLine($"{startCampResponse.willRecover.hp} {startCampResponse.willRecover.mana}");
+		}
+	}
+	else
+	{
+		Console.WriteLine($"Error {startCampResponse.error}");
+		Console.WriteLine($"{startCampResponse.message}");
 	}
 }
 );
@@ -695,7 +796,7 @@ commands["restinn"] = ("Rest at an inn", async () =>
 		{
 			Console.WriteLine($"Rested {innRestResponse.type} - {innRestResponse.location}");
 			Console.WriteLine($"HP restored {innRestResponse.hpRestored} ({innRestResponse.hp}/{innRestResponse.maxHp})");
-			Console.WriteLine($"Mana restored {innRestResponse.manaRestored} ({ innRestResponse.mana}/{ innRestResponse.maxMana})");
+			Console.WriteLine($"Mana restored {innRestResponse.manaRestored} ({innRestResponse.mana}/{innRestResponse.maxMana})");
 		}
 		else
 		{
@@ -706,7 +807,7 @@ commands["restinn"] = ("Rest at an inn", async () =>
 	{
 		Console.WriteLine($"Error {innRestResponse.error}");
 		Console.WriteLine($"{innRestResponse.message}");
-	}		
+	}
 }
 );
 
@@ -741,8 +842,18 @@ commands["reststop"] = ("Stop resting", async () =>
 		return;
 	}
 	var stopRestResponse = await Post<StopRestResponse>(string.Empty, Constants.RestStop, token);
-	//TODO:
-	Console.WriteLine(stopRestResponse);
+	if (String.IsNullOrEmpty(stopRestResponse.error))
+	{
+		Console.WriteLine($"Stopped: {stopRestResponse.stopped} Completed: {stopRestResponse.completed}");
+		Console.WriteLine($"{stopRestResponse.elapsedSeconds}");
+		Console.WriteLine($"{stopRestResponse.elapsedSeconds}");
+		Console.WriteLine($"Current: {stopRestResponse.hp}/{stopRestResponse.maxHp}HP, {stopRestResponse.mana}/{stopRestResponse.maxMana} mana");
+		Console.WriteLine($"Recovered: {stopRestResponse.recovered.hp}HP, {stopRestResponse.recovered.mana} mana");
+	}
+	else
+	{
+		Console.WriteLine(stopRestResponse.message);
+	}
 }
 );
 
@@ -917,8 +1028,14 @@ commands["questturnin"] = ("Complete a quest", async () =>
 	turnInQuest.questId = turnInQuestId;
 	jsonString = JsonSerializer.Serialize(turnInQuest, options);
 	var turnInQuestResponse = await Post<TurnInQuestResponse>(jsonString, Constants.QuestTurnIn, token);
-	//TODO:
-	Console.WriteLine(turnInQuestResponse);
+	Console.WriteLine(turnInQuestResponse.message);
+	if (turnInQuestResponse.rewards != null)
+	{
+		foreach (var item in turnInQuestResponse.rewards.items)
+		{
+			Console.WriteLine($"  {item.name} ({item.itemId}) {item.quantity}x");
+		}
+	}
 }
 );
 
@@ -954,7 +1071,7 @@ commands["dungeonstatus"] = ("Dungeon status", async () =>
 		Console.WriteLine($"{dungeonStatusResponse.dungeonLevel} ({dungeonStatusResponse.rooms} / {dungeonStatusResponse.totalRooms})");
 		foreach (var room in dungeonStatusResponse.rooms)
 		{
-			//TODO:
+			//TODO: dungeonstatus
 			//int index
 			//string type
 			//bool cleared
@@ -978,7 +1095,7 @@ commands["dungeonenter"] = ("Enter dungeon", async () =>
 	enterDungeon.poiId = dungeonPoiId;
 	jsonString = JsonSerializer.Serialize(enterDungeon, options);
 	var enterDungeonResponse = await Post<DungeonStatus>(jsonString, Constants.DungeonEnter, token);
-	//TODO:
+	//TODO: dungeonenter
 	Console.WriteLine(enterDungeonResponse);
 }
 );
@@ -991,7 +1108,7 @@ commands["dungeonadvance"] = ("Advance to next dungeon room", async () =>
 		return;
 	}
 	var dungeonAdvanceResponse = await Post<DungeonAdvanceResponse>(string.Empty, Constants.DungeonAdvance, token);
-	//TODO:
+	//TODO: dungeonadvance
 	Console.WriteLine(dungeonAdvanceResponse);
 }
 );
@@ -1004,7 +1121,7 @@ commands["dungeonleave"] = ("Leave dungeon", async () =>
 		return;
 	}
 	var dungeonLeaveResponse = await Post<DungeonLeaveResponse>(string.Empty, Constants.DungeonLeave, token);
-	//TODO:
+	//TODO: dungeonleave
 	Console.WriteLine(dungeonLeaveResponse);
 }
 );
@@ -1055,16 +1172,13 @@ commands["gatheringharvest"] = ("Harvest node", async () =>
 	harvest.nodeId = harvestNodeId;
 	jsonString = JsonSerializer.Serialize(harvest, options);
 	var harvestResponse = await Post<HarvestResponse>(jsonString, Constants.GatheringHarvest, token);
-	//TODO:
 	Console.WriteLine($"{harvestResponse.harvested} ({harvestResponse.itemId}) {harvestResponse.quantity}x");
-
-	//int xpGained { get; set; }
-	//string skill { get; set; }
-	//int skillLevel { get; set; }
-	//int skillXp { get; set; }
-	//int cooldownMinutes { get; set; }
-	//DateTime availableAt { get; set; }
-	//HarvestLevelUp levelUp { get; set; }
+	Console.WriteLine($"{harvestResponse.skill} XP gained: {harvestResponse.xpGained} XP: {harvestResponse.skillXp} Level: {harvestResponse.skillLevel}");
+	if (harvestResponse.levelUp != null)
+	{
+		Console.WriteLine($"Levelled up: {harvestResponse.levelUp.skill} - new level {harvestResponse.levelUp.newLevel}");
+	}
+	Console.WriteLine($"Cooldown: {harvestResponse.cooldownMinutes} minutes - available at {harvestResponse.availableAt}");
 }
 );
 
@@ -1090,12 +1204,20 @@ commands["craftingrecipes"] = ("Crafting recipes", async () =>
 		return;
 	}
 	Console.WriteLine("skill filter (blacksmithing, alchemy, woodworking, blank for all)");
-	var craftingSkillFilter = Console.ReadLine();
-	//var craftingSkillFilter = ReadValidatedInput(["strength", "dexterity", "constitution", "intelligence", "wisdom", "charisma"]);
+	var craftingSkillFilter = ReadValidatedInput(["blacksmithing", "alchemy", "woodworking", ""]);
 	var recipesUrl = string.IsNullOrWhiteSpace(craftingSkillFilter) ? Constants.CraftingRecipes : $"{Constants.CraftingRecipes}?skill={craftingSkillFilter}";
 	var craftingRecipesResponse = await Get<CraftingRecipesResponse>(recipesUrl, token);
-	//TODO:
-	Console.WriteLine(craftingRecipesResponse);
+	foreach (var recipie in craftingRecipesResponse.recipes)
+	{
+		Console.WriteLine($"{recipie.name} ({recipie.id})");
+		Console.WriteLine($"  {recipie.skill} {recipie.minLevel} {recipie.meetsLevel} {recipie.hasIngredients} {recipie.canCraft} {recipie.xpReward}");
+		foreach (var ingredient in recipie.ingredients)
+		{
+			Console.WriteLine($"    ({ingredient.itemId}) {ingredient.quantity}x {ingredient.have}");
+		}
+		Console.WriteLine($"  ({recipie.output.itemId}) {recipie.output.quantity}x");
+	}
+
 }
 );
 
@@ -1107,8 +1229,15 @@ commands["craftingstations"] = ("Nearby crafting stations", async () =>
 		return;
 	}
 	var craftingStationsResponse = await Get<CraftingStationsResponse>(Constants.CraftingStations, token);
-	//TODO:
-	Console.WriteLine(craftingStationsResponse);
+	Console.WriteLine($"Current position: [{craftingStationsResponse.position.x},{craftingStationsResponse.position.y}]");
+	if (craftingStationsResponse.stations != null)
+	{
+		foreach (var station in craftingStationsResponse.stations)
+		{
+			Console.WriteLine($"  {station.name} ({station.id}) {station.type} {station.skill}");
+			Console.WriteLine($"    {station.description}");
+		}
+	}
 }
 );
 
@@ -1125,8 +1254,23 @@ commands["craftingcraft"] = ("Craft item", async () =>
 	craft.recipeId = recipeId;
 	jsonString = JsonSerializer.Serialize(craft, options);
 	var craftResponse = await Post<CraftResponse>(jsonString, Constants.CraftingCraft, token);
-	//TODO:
-	Console.WriteLine(craftResponse);
+	if (String.IsNullOrEmpty(craftResponse.error))
+	{
+		Console.WriteLine($"{craftResponse.crafted} ({craftResponse.itemId}) {craftResponse.quantity}x");
+		Console.WriteLine($"{craftResponse.xpGained}");
+		Console.WriteLine($"{craftResponse.skill}");
+		Console.WriteLine($"{craftResponse.skillLevel}");
+		Console.WriteLine($"{craftResponse.skillXp}");
+		if (craftResponse.levelUp != null)
+		{
+			Console.WriteLine($"Skill {craftResponse.levelUp.skill} levelled up - new level {craftResponse.levelUp.newLevel}");
+		}
+	}
+	else
+	{
+		Console.WriteLine($"Error {craftResponse.error}");
+		Console.WriteLine(craftResponse.message);
+	}
 }
 );
 
