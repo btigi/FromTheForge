@@ -74,7 +74,7 @@ commands["login"] = ("Login", async () =>
 		return;
 	}
 	token = loginResponse.AccessToken;
-	Console.WriteLine($"Logged in as {loginResponse.User.Email}");
+	Console.WriteLine($"Logged in as {new string('*', loginResponse.User.Email.Length)}");
 }
 );
 
@@ -162,7 +162,24 @@ commands["get"] = ("Get my character", async () =>
 		Console.WriteLine("(No character / request failed)");
 		return;
 	}
-	Console.WriteLine(JsonSerializer.Serialize(character, options));
+
+	Console.WriteLine($"{character.name} {character.race.name} {character.@class.name} [{character.position.x},{character.position.y}]");
+	Console.WriteLine($"Level: {character.level} XP: {character.xp}/{character.xpToNextLevel}");
+	Console.WriteLine($"{character.hp}/{character.maxHp}HP, {character.mana}/{character.maxMana}mana, {character.ac}AC, {character.gold}gold");
+	Console.WriteLine($"Base:  STR {character.strength} DEX {character.dexterity} CON {character.constitution} INT {character.intelligence} WIS {character.wisdom} CHA {character.charisma}");
+	Console.WriteLine($"Effective:  STR {character.effectiveStats.strength} DEX {character.effectiveStats.dexterity} CON {character.effectiveStats.constitution} INT {character.effectiveStats.intelligence} WIS {character.effectiveStats.wisdom} CHA {character.effectiveStats.charisma}");
+	Console.WriteLine($"In Dungeon: {character.inDungeon}");
+	Console.WriteLine($"In Combat: {character.inCombat}");
+	var travelDestination = String.Empty;
+	if (character.travel.isTraveling)
+	{
+		travelDestination = $"[{character.travel.destination.x},{character.travel.destination.y}] ETA: {character.travel.eta}";
+	}
+	Console.WriteLine($"Travelling: {character.travel.isTraveling} {travelDestination}");
+	if (character.unspentStatPoints > 0)
+	{
+		Console.WriteLine($"** {character.unspentStatPoints} unspent stat points **");
+	}
 }
 );
 
@@ -183,7 +200,7 @@ commands["allocate"] = ("Placeholder: allocate stat point on level up", async ()
 }
 );
 
-commands["travel"] = ("Move one step (north/east/south/west)", async () =>
+commands["move"] = ("Move one step (north/east/south/west)", async () =>
 {
 	if (string.IsNullOrWhiteSpace(token))
 	{
@@ -495,7 +512,7 @@ commands["inventory"] = ("Get inventory", async () =>
 		Console.WriteLine("You must be logged in to use this command.");
 		return;
 	}
-	var subinventory = ReadValidatedInput(["equipment", "backpack"]);
+	var subinventory = ReadValidatedInput(["backpack", "equipment"]);
 
 	var inventoryResponse = await Get<Inventory>(Constants.Inventory, token);
 	if (inventoryResponse == null)
