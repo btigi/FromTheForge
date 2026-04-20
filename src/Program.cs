@@ -1071,14 +1071,17 @@ commands["dungeonstatus"] = ("Dungeon status", async () =>
 		Console.WriteLine($"{dungeonStatusResponse.dungeonLevel} ({dungeonStatusResponse.rooms} / {dungeonStatusResponse.totalRooms})");
 		foreach (var room in dungeonStatusResponse.rooms)
 		{
-			//TODO: dungeonstatus
-			//int index
-			//string type
-			//bool cleared
-			//string[] log
+			Console.WriteLine($"Room index: {room.index} {room.type} Cleared {room.cleared}");
+			foreach (var log in room.log)
+			{
+				Console.WriteLine($"  {log}");
+			}
 		}
 	}
-	Console.WriteLine(dungeonStatusResponse);
+	else
+	{
+		Console.WriteLine("Not in a dungeon");
+	}
 }
 );
 
@@ -1094,9 +1097,16 @@ commands["dungeonenter"] = ("Enter dungeon", async () =>
 	var enterDungeon = new EnterDungeon();
 	enterDungeon.poiId = dungeonPoiId;
 	jsonString = JsonSerializer.Serialize(enterDungeon, options);
-	var enterDungeonResponse = await Post<DungeonStatus>(jsonString, Constants.DungeonEnter, token);
-	//TODO: dungeonenter
-	Console.WriteLine(enterDungeonResponse);
+	var enterDungeonResponse = await Post<DungeonStatus>(jsonString, Constants.DungeonEnter, token);	
+	if (String.IsNullOrEmpty(enterDungeonResponse.error))
+	{
+		//TODO: dungeonenter
+	}
+	else
+	{
+		Console.WriteLine($"Error {enterDungeonResponse.error}");
+		Console.WriteLine($"{enterDungeonResponse.message}");
+	}
 }
 );
 
@@ -1108,8 +1118,14 @@ commands["dungeonadvance"] = ("Advance to next dungeon room", async () =>
 		return;
 	}
 	var dungeonAdvanceResponse = await Post<DungeonAdvanceResponse>(string.Empty, Constants.DungeonAdvance, token);
-	//TODO: dungeonadvance
-	Console.WriteLine(dungeonAdvanceResponse);
+	if (String.IsNullOrEmpty(dungeonAdvanceResponse.error))
+	{
+		//TODO: dungeonadvance
+	}
+	else {
+		Console.WriteLine($"Error {dungeonAdvanceResponse.error}");
+		Console.WriteLine($"{dungeonAdvanceResponse.message}");
+	}
 }
 );
 
@@ -1121,8 +1137,11 @@ commands["dungeonleave"] = ("Leave dungeon", async () =>
 		return;
 	}
 	var dungeonLeaveResponse = await Post<DungeonLeaveResponse>(string.Empty, Constants.DungeonLeave, token);
-	//TODO: dungeonleave
-	Console.WriteLine(dungeonLeaveResponse);
+	Console.WriteLine(dungeonLeaveResponse.message);
+	if (dungeonLeaveResponse.left)
+	{
+		Console.WriteLine($"Position: [{dungeonLeaveResponse.position.x},{dungeonLeaveResponse.position.y}]");
+	}
 }
 );
 
@@ -1309,15 +1328,15 @@ commands["gameitems"] = ("Game data: all items", async () =>
 	foreach (var item in gameItemsResponse)
 	{
 		Console.WriteLine($"{item.name} ({item.id})");
-		Console.WriteLine($"{item.type} ({item.rarity})");
-		Console.WriteLine($"{item.damage_min} ({item.damage_max})");
-		Console.WriteLine($"{item.armor}");
-		Console.WriteLine($"{item.value}");
-		Console.WriteLine($"{item.weight}lbs");
-		Console.WriteLine($"{item.level_req}");
-		Console.WriteLine($"{item.class_req}");
-		//Console.WriteLine($"{item.statusEffect}");
-		Console.WriteLine($"{item.statusChance}");
+		Console.WriteLine($"  {item.type} ({item.rarity})");
+		Console.WriteLine($"  {item.damage_min} ({item.damage_max})");
+		Console.WriteLine($"  {item.armor}");
+		Console.WriteLine($"  {item.value}");
+		Console.WriteLine($"  {item.weight}lbs");
+		Console.WriteLine($"  {item.level_req}");
+		Console.WriteLine($"  {item.class_req}");
+		//Console.WriteLine($"  {item.statusEffect}");
+		Console.WriteLine($"  {item.statusChance}");
 	}
 }
 );
@@ -1329,14 +1348,14 @@ commands["gamespells"] = ("Game data: all spells", async () =>
 	foreach (var spell in gameSpellsResponse)
 	{
 		Console.WriteLine($"{spell.name} ({spell.id}) {spell.level_req} {spell.mana_cost}");
-		Console.WriteLine($"{spell.description}");
-		Console.WriteLine($"{spell.cooldown}");
-		Console.WriteLine($"{spell.targetType}");
-		Console.WriteLine($"{spell.effectType}");
-		Console.WriteLine($"{spell.effectValue}");
-		Console.WriteLine($"{spell.damageType}");
-		Console.WriteLine($"{spell.spellClass}");
-		//Console.WriteLine($"{spell.statusEffect}");
+		Console.WriteLine($"  {spell.description}");
+		Console.WriteLine($"  {spell.cooldown}");
+		Console.WriteLine($"  {spell.targetType}");
+		Console.WriteLine($"  {spell.effectType}");
+		Console.WriteLine($"  {spell.effectValue}");
+		Console.WriteLine($"  {spell.damageType}");
+		Console.WriteLine($"  {spell.spellClass}");
+		//Console.WriteLine($"  {spell.statusEffect}");
 	}
 }
 );

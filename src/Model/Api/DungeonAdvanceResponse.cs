@@ -15,4 +15,7 @@
 	public int maxMana { get; set; }
 	public RestRecoveryAmount recovered { get; set; }
 	public string[] log { get; set; }
+
+	public string error { get; set; }
+	public int statusCode { get; set; }
 }
