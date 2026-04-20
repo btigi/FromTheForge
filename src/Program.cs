@@ -108,9 +108,9 @@ commands["create"] = ("Create character", async () =>
 	Console.WriteLine("Name");
 	var name = Console.ReadLine();
 	Console.WriteLine("Race");
-	var race = ReadValidatedInput(["human", "elf", "dwarf", "halfling", "orc"]);
+	var race = ReadValidatedInput(["dwarf", "elf", "halfling", "human", "orc"]);
 	Console.WriteLine("Class");
-	var @class = ReadValidatedInput(["warrior", "mage", "rogue", "cleric", "ranger"]);
+	var @class = ReadValidatedInput(["cleric", "mage", "ranger", "rogue", "warrior"]);
 	Console.WriteLine("STR");
 	var str = ReadValidatedIntInput(8, 15);
 	Console.WriteLine("DEX");
@@ -357,7 +357,7 @@ commands["map"] = ("Get world map", async () =>
 	}
 
 	Console.WriteLine("Map command");
-	var submap = ReadValidatedInput(["map", "pois", "discoveries"]);
+	var submap = ReadValidatedInput(["map", "points", "discoveries"]);
 
 	var mapResponse = await Get<MapResponseDto>(Constants.Map, token);
 
@@ -383,7 +383,7 @@ commands["map"] = ("Get world map", async () =>
 		}
 	}
 
-	if (submap == "pois")
+	if (submap == "points")
 	{
 		if (mapResponse.pois != null)
 		{
@@ -1225,9 +1225,9 @@ commands["gatheringskills"] = ("Gathering skill levels", async () =>
 		return;
 	}
 	var gatheringSkillsResponse = await Get<GatheringSkillsResponse>(Constants.GatheringSkills, token);
-	Console.WriteLine($"Herbalism: Level {gatheringSkillsResponse.skills.herbalism.level} XP {gatheringSkillsResponse.skills.herbalism.xp} XP to level {gatheringSkillsResponse.skills.herbalism.xpToNext}");
-	Console.WriteLine($"Mining: Level {gatheringSkillsResponse.skills.mining.level} XP {gatheringSkillsResponse.skills.mining.xp} XP to level {gatheringSkillsResponse.skills.mining.xpToNext}");
-	Console.WriteLine($"Woodcutting: Level {gatheringSkillsResponse.skills.woodcutting.level} XP {gatheringSkillsResponse.skills.woodcutting.xp} XP to level {gatheringSkillsResponse.skills.woodcutting.xpToNext}");
+	Console.WriteLine($"  Herbalism: Level {gatheringSkillsResponse.skills.herbalism.level} {gatheringSkillsResponse.skills.herbalism.xp}/{gatheringSkillsResponse.skills.herbalism.xpToNext}XP");
+	Console.WriteLine($"  Mining: Level {gatheringSkillsResponse.skills.mining.level} {gatheringSkillsResponse.skills.mining.xp}/{gatheringSkillsResponse.skills.mining.xpToNext}XP");
+	Console.WriteLine($"  Woodcutting: Level {gatheringSkillsResponse.skills.woodcutting.level} {gatheringSkillsResponse.skills.woodcutting.xp}/{gatheringSkillsResponse.skills.woodcutting.xpToNext}XP");
 }
 );
 
@@ -1263,13 +1263,21 @@ commands["gatheringharvest"] = ("Harvest node", async () =>
 	harvest.nodeId = harvestNodeId;
 	jsonString = JsonSerializer.Serialize(harvest, options);
 	var harvestResponse = await Post<HarvestResponse>(jsonString, Constants.GatheringHarvest, token);
-	Console.WriteLine($"{harvestResponse.harvested} ({harvestResponse.itemId}) {harvestResponse.quantity}x");
-	Console.WriteLine($"{harvestResponse.skill} XP gained: {harvestResponse.xpGained} XP: {harvestResponse.skillXp} Level: {harvestResponse.skillLevel}");
-	if (harvestResponse.levelUp != null)
+	if (String.IsNullOrEmpty(harvestResponse.error))
 	{
-		Console.WriteLine($"Levelled up: {harvestResponse.levelUp.skill} - new level {harvestResponse.levelUp.newLevel}");
+		Console.WriteLine($"{harvestResponse.harvested} ({harvestResponse.itemId}) {harvestResponse.quantity}x");
+		Console.WriteLine($"{harvestResponse.skill} Level: {harvestResponse.skillLevel} {harvestResponse.xpGained}/{harvestResponse.skillXp}xp");
+		if (harvestResponse.levelUp != null)
+		{
+			Console.WriteLine($"Levelled up: {harvestResponse.levelUp.skill} - new level {harvestResponse.levelUp.newLevel}");
+		}
+		Console.WriteLine($"Cooldown: {harvestResponse.cooldownMinutes} minutes - available at {harvestResponse.availableAt}");
 	}
-	Console.WriteLine($"Cooldown: {harvestResponse.cooldownMinutes} minutes - available at {harvestResponse.availableAt}");
+	else
+	{
+		Console.WriteLine($"Error {harvestResponse.error}");
+		Console.WriteLine($"{harvestResponse.message}");
+	}
 }
 );
 
@@ -1281,9 +1289,9 @@ commands["craftingskills"] = ("Crafting skill levels", async () =>
 		return;
 	}
 	var craftingSkillsResponse = await Get<CraftingSkillsResponse>(Constants.CraftingSkills, token);
-	Console.WriteLine($"Alchemy: Level {craftingSkillsResponse.skills.alchemy.level} XP {craftingSkillsResponse.skills.alchemy.xp} XP to level {craftingSkillsResponse.skills.alchemy.xpToNext}");
-	Console.WriteLine($"Blacksmithing: Level {craftingSkillsResponse.skills.blacksmithing.level} XP {craftingSkillsResponse.skills.blacksmithing.xp} XP to level {craftingSkillsResponse.skills.blacksmithing.xpToNext}");
-	Console.WriteLine($"Woodworking: Level {craftingSkillsResponse.skills.woodworking.level} XP {craftingSkillsResponse.skills.woodworking.xp} XP to level {craftingSkillsResponse.skills.woodworking.xpToNext}");
+	Console.WriteLine($"  Alchemy: Level {craftingSkillsResponse.skills.alchemy.level} {craftingSkillsResponse.skills.alchemy.xp}/{craftingSkillsResponse.skills.alchemy.xpToNext}XP");
+	Console.WriteLine($"  Blacksmithing: Level {craftingSkillsResponse.skills.blacksmithing.level} {craftingSkillsResponse.skills.blacksmithing.xp}/{craftingSkillsResponse.skills.blacksmithing.xpToNext}XP");
+	Console.WriteLine($"  Woodworking: Level {craftingSkillsResponse.skills.woodworking.level} {craftingSkillsResponse.skills.woodworking.xp}/{craftingSkillsResponse.skills.woodworking.xpToNext}XP");
 }
 );
 
@@ -1294,19 +1302,18 @@ commands["craftingrecipes"] = ("Crafting recipes", async () =>
 		Console.WriteLine("You must be logged in to use this command.");
 		return;
 	}
-	Console.WriteLine("skill filter (blacksmithing, alchemy, woodworking, blank for all)");
-	var craftingSkillFilter = ReadValidatedInput(["blacksmithing", "alchemy", "woodworking", ""]);
+	Console.WriteLine("Skill filter");
+	var craftingSkillFilter = ReadValidatedInput(["alchemy", "blacksmithing", "woodworking", ""]);
 	var recipesUrl = string.IsNullOrWhiteSpace(craftingSkillFilter) ? Constants.CraftingRecipes : $"{Constants.CraftingRecipes}?skill={craftingSkillFilter}";
 	var craftingRecipesResponse = await Get<CraftingRecipesResponse>(recipesUrl, token);
-	foreach (var recipie in craftingRecipesResponse.recipes)
+	foreach (var recipie in craftingRecipesResponse.recipes.OrderBy(o => o.name))
 	{
-		Console.WriteLine($"{recipie.name} ({recipie.id})");
-		Console.WriteLine($"  {recipie.skill} {recipie.minLevel} {recipie.meetsLevel} {recipie.hasIngredients} {recipie.canCraft} {recipie.xpReward}");
+		Console.WriteLine($"{recipie.name} ({recipie.id}) {recipie.skill} XP Reward: {recipie.xpReward}");
+		Console.WriteLine($"   Can craft: {BoolToString(recipie.canCraft)} - Meet Level Requirement: {BoolToString(recipie.meetsLevel)} (Min. Level: {recipie.minLevel}) Have ingredients: {BoolToString(recipie.hasIngredients)}");
 		foreach (var ingredient in recipie.ingredients)
 		{
-			Console.WriteLine($"    ({ingredient.itemId}) {ingredient.quantity}x {ingredient.have}");
+			Console.WriteLine($"    ({ingredient.itemId}) {ingredient.have}/{ingredient.quantity}x");
 		}
-		Console.WriteLine($"  ({recipie.output.itemId}) {recipie.output.quantity}x");
 	}
 
 }
@@ -1545,6 +1552,11 @@ int ReadValidatedIntInput(int min, int max)
 		response = Console.ReadLine();
 	}
 	return Convert.ToInt32(response);
+}
+
+string BoolToString(bool boolean)
+{
+	return boolean ? "Yes" : "No";
 }
 
 static DateTime? GetBuildDate(Assembly assembly)

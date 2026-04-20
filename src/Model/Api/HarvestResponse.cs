@@ -10,4 +10,8 @@
 	public int cooldownMinutes { get; set; }
 	public DateTime availableAt { get; set; }
 	public HarvestLevelUp levelUp { get; set; }
+
+	public string error { get; set; }
+	public string message { get; set; }
+	public int statusCode { get; set; }
 }
