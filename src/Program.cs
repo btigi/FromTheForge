@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Reflection;
+using System.Text;
 using System.Text.Json;
 
 var jsonString = "";
@@ -20,6 +22,11 @@ Console.WriteLine(@"  ______                     _   _            ______
  |_|  |_|  \___/|_| |_| |_|  \__|_| |_|\___| |_|  \___/|_|  \__, |\___|
                                                              __/ |     
                                                             |___/   ");
+
+
+var buildDate = GetBuildDate(Assembly.GetExecutingAssembly());
+var buildDateString = buildDate?.ToString("yyyy/MM/dd@HH:mm") ?? "unknown";
+Console.WriteLine($"Build {buildDateString}");
 
 var token = string.Empty;
 
@@ -163,7 +170,7 @@ commands["get"] = ("Get my character", async () =>
 		return;
 	}
 
-	Console.WriteLine($"{character.name} {character.race.name} {character.@class.name} [{character.position.x},{character.position.y}]");
+	Console.WriteLine($"{character.name} {character.race.name}, {character.@class.name}");
 	Console.WriteLine($"Level: {character.level} XP: {character.xp}/{character.xpToNextLevel}");
 	Console.WriteLine($"{character.hp}/{character.maxHp}HP, {character.mana}/{character.maxMana}mana, {character.ac}AC, {character.gold}gold");
 	Console.WriteLine($"Base:  STR {character.strength} DEX {character.dexterity} CON {character.constitution} INT {character.intelligence} WIS {character.wisdom} CHA {character.charisma}");
@@ -175,6 +182,7 @@ commands["get"] = ("Get my character", async () =>
 	{
 		travelDestination = $"[{character.travel.destination.x},{character.travel.destination.y}] ETA: {character.travel.eta}";
 	}
+	Console.WriteLine($"Location: [{character.position.x},{character.position.y}]");
 	Console.WriteLine($"Travelling: {character.travel.isTraveling} {travelDestination}");
 	if (character.unspentStatPoints > 0)
 	{
@@ -328,7 +336,7 @@ commands["travelcancel"] = ("Cancel active travel", async () =>
 	Console.WriteLine(travelCancelResponse.cellsTraversed);
 	Console.WriteLine($"[{travelCancelResponse.position.x},{travelCancelResponse.position.y}]");
 	//Console.WriteLine(travelCancelResponse.xp);
-	if ((travelCancelResponse.discoveries?.Length ?? 0) > 0)
+	if (travelCancelResponse.discoveries != null)
 	{
 		foreach (var discovery in travelCancelResponse.discoveries)
 		{
@@ -377,21 +385,35 @@ commands["map"] = ("Get world map", async () =>
 
 	if (submap == "pois")
 	{
-		foreach (var poi in mapResponse.pois)
+		if (mapResponse.pois != null)
 		{
-			Console.WriteLine($"{poi.name} [{poi.x},{poi.y}]");
-			Console.WriteLine($"  {poi.description}");
-			Console.WriteLine($"  {poi.category} {poi.type} {poi.level_min}-{poi.level_max}");
+			foreach (var poi in mapResponse.pois)
+			{
+				Console.WriteLine($"{poi.name} [{poi.x},{poi.y}]");
+				Console.WriteLine($"  {poi.description}");
+				Console.WriteLine($"  {poi.category} {poi.type} {poi.level_min}-{poi.level_max}");
+			}
+		}
+		else
+		{
+			Console.WriteLine("No pois.");
 		}
 	}
 
 	if (submap == "discoveries")
 	{
-		foreach (var discovery in mapResponse.discoveries)
+		if (mapResponse.discoveries != null)
 		{
-			Console.WriteLine($"{discovery.name} [{discovery.x},{discovery.y}]");
-			Console.WriteLine($"  {discovery.description}");
-			Console.WriteLine($"  {discovery.category} {discovery.type} {discovery.level_min}-{discovery.level_max}");
+			foreach (var discovery in mapResponse.discoveries)
+			{
+				Console.WriteLine($"{discovery.name} [{discovery.x},{discovery.y}]");
+				Console.WriteLine($"  {discovery.description}");
+				Console.WriteLine($"  {discovery.category} {discovery.type} {discovery.level_min}-{discovery.level_max}");
+			}
+		}
+		else
+		{
+			Console.WriteLine("No discoveries.");
 		}
 	}
 }
@@ -1114,7 +1136,7 @@ commands["dungeonenter"] = ("Enter dungeon", async () =>
 	var enterDungeon = new EnterDungeon();
 	enterDungeon.poiId = dungeonPoiId;
 	jsonString = JsonSerializer.Serialize(enterDungeon, options);
-	var enterDungeonResponse = await Post<DungeonStatus>(jsonString, Constants.DungeonEnter, token);	
+	var enterDungeonResponse = await Post<DungeonStatus>(jsonString, Constants.DungeonEnter, token);
 	if (String.IsNullOrEmpty(enterDungeonResponse.error))
 	{
 		Console.WriteLine($"{enterDungeonResponse.dungeonId} {enterDungeonResponse.poiName} ({enterDungeonResponse.poiId}) Completed: {enterDungeonResponse.completed}");
@@ -1171,7 +1193,8 @@ commands["dungeonadvance"] = ("Advance to next dungeon room", async () =>
 			Console.WriteLine($"  {dungeonAdvanceResponse.recovered.hp}HP {dungeonAdvanceResponse.recovered.mana}mana");
 		}
 	}
-	else {
+	else
+	{
 		Console.WriteLine($"Error {dungeonAdvanceResponse.error}");
 		Console.WriteLine($"{dungeonAdvanceResponse.message}");
 	}
@@ -1454,11 +1477,18 @@ async Task<T> Post<T>(string content, string endpoint, string token = "")
 		}
 		var response = await client.PostAsync(endpoint, httpContent);
 		var body = await response.Content.ReadAsStringAsync();
-		return JsonSerializer.Deserialize<T>(body, jsonReadOptions);
+		var result = JsonSerializer.Deserialize<T>(body, jsonReadOptions);
+		if (result == null)
+		{
+			Console.WriteLine($"Failed to deserialize response: {body}");
+			return default!;
+		}
+		return result;
 	}
 	catch (Exception ex)
 	{
-		return default;
+		Console.WriteLine(ex.Message);
+		return default!;
 	}
 }
 
@@ -1471,11 +1501,18 @@ async Task<T> Get<T>(string endpoint, string token = "")
 			client.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 		var response = await client.GetAsync(endpoint);
 		var body = await response.Content.ReadAsStringAsync();
-		return JsonSerializer.Deserialize<T>(body, jsonReadOptions);
+		var result = JsonSerializer.Deserialize<T>(body, jsonReadOptions);
+		if (result == null)
+		{
+			Console.WriteLine($"Failed to deserialize response: {body}");
+			return default!;
+		}
+		return result;
 	}
 	catch (Exception ex)
 	{
-		return default;
+		Console.WriteLine(ex.Message);
+		return default!;
 	}
 }
 
@@ -1494,7 +1531,7 @@ string ReadValidatedInput(string[] validoptions)
 		Console.Write(">");
 		response = Console.ReadLine();
 	}
-	return response;
+	return response ?? string.Empty;
 }
 
 int ReadValidatedIntInput(int min, int max)
@@ -1508,6 +1545,32 @@ int ReadValidatedIntInput(int min, int max)
 		response = Console.ReadLine();
 	}
 	return Convert.ToInt32(response);
+}
+
+static DateTime? GetBuildDate(Assembly assembly)
+{
+	var info = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+	if (string.IsNullOrEmpty(info))
+		return null;
+
+	const string prefix = "+build";
+	var index = info.IndexOf(prefix, StringComparison.OrdinalIgnoreCase);
+	if (index < 0)
+		return null;
+
+	var value = info[(index + prefix.Length)..];
+
+	if (DateTime.TryParseExact(
+			value,
+			"yyyyMMddHHmmss",
+			CultureInfo.InvariantCulture,
+			DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal,
+			out var date))
+	{
+		return date;
+	}
+
+	return null;
 }
 
 file static class TerrainGlyph
