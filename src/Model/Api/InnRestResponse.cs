@@ -9,4 +9,8 @@
 	public int maxMana { get; set; }
 	public int hpRestored { get; set; }
 	public int manaRestored { get; set; }
+
+	public string error { get; set; }
+	public string message { get; set; }
+	public int statusCode { get; set; }
 }

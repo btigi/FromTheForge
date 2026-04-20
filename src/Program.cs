@@ -164,8 +164,7 @@ commands["allocate"] = ("Placeholder: allocate stat point on level up", async ()
 	allocate.stat = stat;
 	jsonString = JsonSerializer.Serialize(allocate, options);
 	var allocateResponse = await Post<AllocateResponse>(jsonString, Constants.Allocate, token);
-	Console.WriteLine(JsonSerializer.Serialize(allocateResponse, options));
-	//TODO:
+	Console.WriteLine(allocateResponse.message);
 }
 );
 
@@ -690,8 +689,24 @@ commands["restinn"] = ("Rest at an inn", async () =>
 		return;
 	}
 	var innRestResponse = await Post<InnRestResponse>(string.Empty, Constants.RestInn, token);
-	//TODO:
-	Console.WriteLine(innRestResponse);
+	if (String.IsNullOrEmpty(innRestResponse.error))
+	{
+		if (innRestResponse.rested)
+		{
+			Console.WriteLine($"Rested {innRestResponse.type} - {innRestResponse.location}");
+			Console.WriteLine($"HP restored {innRestResponse.hpRestored} ({innRestResponse.hp}/{innRestResponse.maxHp})");
+			Console.WriteLine($"Mana restored {innRestResponse.manaRestored} ({ innRestResponse.mana}/{ innRestResponse.maxMana})");
+		}
+		else
+		{
+			Console.WriteLine($"Not rested");
+		}
+	}
+	else
+	{
+		Console.WriteLine($"Error {innRestResponse.error}");
+		Console.WriteLine($"{innRestResponse.message}");
+	}		
 }
 );
 
@@ -781,8 +796,8 @@ commands["shopbuy"] = ("Buy items", async () =>
 	buyItem.quantity = buyQty;
 	jsonString = JsonSerializer.Serialize(buyItem, options);
 	var buyResponse = await Post<BuyItemResponse>(jsonString, $"{Constants.Shops}/{buyTownId}/buy", token);
-	//TODO:
-	Console.WriteLine(buyResponse);
+	Console.WriteLine(buyResponse.message);
+	Console.WriteLine($"Remaining gold: {buyResponse.gold}");
 }
 );
 
@@ -805,8 +820,8 @@ commands["shopsell"] = ("Sell items", async () =>
 	sellItem.quantity = sellQty;
 	jsonString = JsonSerializer.Serialize(sellItem, options);
 	var sellResponse = await Post<SellItemResponse>(jsonString, $"{Constants.Shops}/{sellTownId}/sell", token);
-	//TODO:
-	Console.WriteLine(sellResponse);
+	Console.WriteLine(sellResponse.message);
+	Console.WriteLine($"Remaining gold: {sellResponse.gold}");
 }
 );
 
