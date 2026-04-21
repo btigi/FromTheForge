@@ -39,16 +39,18 @@ jobs:
           $version = "${{ github.ref_name }}" -replace '^v', ''
           Compress-Archive -Path "../publish/*" -DestinationPath "../FromTheForge-$version.zip" -Force
 
-      - name: Create GitHub Release
+      - name: Attach build to GitHub Release
         run: |
           $tag = "${{ github.ref_name }}"
           $version = $tag -replace '^v', ''
-          gh release create $tag `
-            --repo="$env:GITHUB_REPOSITORY" `
-            --title="$version" `
-            --generate-notes `
-            --latest `
-            "../FromTheForge-$version.zip"
+          $zip = "../FromTheForge-$version.zip"
+          $repo = $env:GITHUB_REPOSITORY
+          gh release view $tag --repo $repo *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag $zip --repo $repo --clobber
+          } else {
+            gh release create $tag $zip --repo $repo --title $version --generate-notes --latest
+          }
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
