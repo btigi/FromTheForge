@@ -332,7 +332,6 @@ commands["travelcancel"] = ("Cancel active travel", async () =>
 	}
 	Console.WriteLine(travelCancelResponse.cellsTraversed);
 	Console.WriteLine($"[{travelCancelResponse.position.x},{travelCancelResponse.position.y}]");
-	//Console.WriteLine(travelCancelResponse.xp);
 	if (travelCancelResponse.discoveries != null)
 	{
 		foreach (var discovery in travelCancelResponse.discoveries)
@@ -511,7 +510,7 @@ commands["combataction"] = ("Combat action", async () =>
 	if (combatActionResponse.outcome == "ongoing")
 	{
 		Console.WriteLine(combatActionResponse.monster.name);
-		Console.WriteLine($"{combatActionResponse.monster.hp} / {combatActionResponse.monster.maxHp} [AC: {combatActionResponse.monster.ac}]");
+		Console.WriteLine($"{combatActionResponse.monster.hp} / {combatActionResponse.monster.maxHp}");
 	}
 }
 );
@@ -982,7 +981,6 @@ commands["questavailable"] = ("List available quests (at current town)", async (
 			Console.WriteLine($"  {objective.target}");
 			Console.WriteLine($"  {objective.required}");
 			Console.WriteLine($"  {objective.quantity}");
-			//Console.WriteLine($"  {objective.current}");
 		}
 		Console.WriteLine($"  XP: {quest.rewards.xp}");
 		Console.WriteLine($"  Gold: {quest.rewards.gold}");
@@ -1371,7 +1369,6 @@ commands["gameraces"] = ("Game data: all races", async () =>
 		Console.WriteLine(c.id);
 		Console.WriteLine($"  {c.name}");
 		Console.WriteLine($"  {c.description}");
-		//Console.WriteLine($"  {c.bonuses}"); // always null
 	}
 }
 );
@@ -1384,8 +1381,6 @@ commands["gameclasses"] = ("Game data: all classes", async () =>
 		Console.WriteLine(c.id);
 		Console.WriteLine($"  {c.name}");
 		Console.WriteLine($"  {c.description}");
-		//Console.WriteLine($"  {c.hitDie}"); // always 0
-		//Console.WriteLine($"  {c.primaryStat}"); // always null
 	}
 }
 );
