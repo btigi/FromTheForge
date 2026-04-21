@@ -1,4 +1,6 @@
-﻿public class ShopResponse
+namespace FromTheForge.Model;
+
+public class ShopResponse
 {
 	public string townId { get; set; } = "";
 	public string shop { get; set; } = "";

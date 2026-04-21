@@ -1,4 +1,6 @@
-﻿public class TravelStatusResponse
+namespace FromTheForge.Model;
+
+public class TravelStatusResponse
 {
 	public bool isTraveling { get; set; }
 	public Position position { get; set; } = new Position();

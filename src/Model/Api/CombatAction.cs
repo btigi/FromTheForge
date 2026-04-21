@@ -1,4 +1,6 @@
-﻿public class CombatAction
+namespace FromTheForge.Model;
+
+public class CombatAction
 {
 	public string action { get; set; } = "";
 	public string spellId { get; set; } = "";

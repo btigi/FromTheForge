@@ -1,4 +1,6 @@
-﻿public class DungeonRoom
+namespace FromTheForge.Model;
+
+public class DungeonRoom
 {
 	public int index { get; set; }
 	public string type { get; set; } = "";

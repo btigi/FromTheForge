@@ -1,4 +1,6 @@
-﻿public class StopRestResponse
+namespace FromTheForge.Model;
+
+public class StopRestResponse
 {
 	public bool stopped { get; set; }
 	public bool completed { get; set; }

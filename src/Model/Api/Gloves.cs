@@ -1,4 +1,6 @@
-﻿public class Gloves
+namespace FromTheForge.Model;
+
+public class Gloves
 {
 	public string id { get; set; } = "";
 	public string name { get; set; } = "";

@@ -1,4 +1,6 @@
-﻿public class Levelup
+namespace FromTheForge.Model;
+
+public class Levelup
 {
 	public int newLevel { get; set; }
 	public int hpGained { get; set; }

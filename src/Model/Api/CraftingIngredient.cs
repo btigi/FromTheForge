@@ -1,4 +1,6 @@
-﻿public class CraftingIngredient
+namespace FromTheForge.Model;
+
+public class CraftingIngredient
 {
 	public string itemId { get; set; } = "";
 	public int quantity { get; set; }

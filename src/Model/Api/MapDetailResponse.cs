@@ -1,4 +1,6 @@
-﻿public class MapDetailResponse
+namespace FromTheForge.Model;
+
+public class MapDetailResponse
 {
 	public int x { get; set; }
 	public int y { get; set; }

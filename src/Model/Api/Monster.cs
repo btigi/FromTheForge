@@ -1,4 +1,6 @@
-﻿public class Monster
+namespace FromTheForge.Model;
+
+public class Monster
 {
 	public string id { get; set; } = "";
 	public string name { get; set; } = "";

@@ -1,4 +1,6 @@
-﻿public class AllocateResponse
+namespace FromTheForge.Model;
+
+public class AllocateResponse
 {
 	public string allocated { get; set; } = "";
 	public int newValue { get; set; }

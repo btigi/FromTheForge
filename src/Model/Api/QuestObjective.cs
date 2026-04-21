@@ -1,4 +1,6 @@
-﻿public class QuestObjective
+namespace FromTheForge.Model;
+
+public class QuestObjective
 {
 	public string type { get; set; } = "";
 	public string target { get; set; } = "";

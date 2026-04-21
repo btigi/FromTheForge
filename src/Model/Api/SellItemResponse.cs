@@ -1,4 +1,6 @@
-﻿public class SellItemResponse
+namespace FromTheForge.Model;
+
+public class SellItemResponse
 {
 	public string sold { get; set; } = "";
 	public int quantity { get; set; }

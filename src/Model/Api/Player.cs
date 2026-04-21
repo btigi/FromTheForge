@@ -1,4 +1,6 @@
-﻿public class Player
+namespace FromTheForge.Model;
+
+public class Player
 {
 	public int hp { get; set; }
 	public int maxHp { get; set; }

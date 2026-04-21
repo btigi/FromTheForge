@@ -1,4 +1,6 @@
-﻿public class Spell
+namespace FromTheForge.Model;
+
+public class Spell
 {
 	public string id { get; set; } = "";
 	public string name { get; set; } = "";

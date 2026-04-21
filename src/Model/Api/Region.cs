@@ -1,4 +1,6 @@
-﻿public class Region
+namespace FromTheForge.Model;
+
+public class Region
 {
 	public string id { get; set; } = "";
 	public string name { get; set; } = "";

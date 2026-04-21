@@ -1,4 +1,6 @@
-﻿public class DungeonLeaveResponse
+namespace FromTheForge.Model;
+
+public class DungeonLeaveResponse
 {
 	public bool left { get; set; }
 	public string message { get; set; } = "";

@@ -1,4 +1,6 @@
-﻿public class CastSpellResponse
+namespace FromTheForge.Model;
+
+public class CastSpellResponse
 {
 	public string cast { get; set; } = "";
 	public int manaCost { get; set; }

@@ -1,4 +1,6 @@
-﻿public class RegisterResponse
+namespace FromTheForge.Model;
+
+public class RegisterResponse
 {
 	public string Id { get; set; } = "";
 	public string Email { get; set; } = "";

@@ -1,4 +1,6 @@
-﻿public class Equipment
+namespace FromTheForge.Model;
+
+public class Equipment
 {
 	public Weapon weapon { get; set; } = new Weapon();
 	public Armor armor { get; set; } = new Armor();

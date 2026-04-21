@@ -1,4 +1,6 @@
-﻿public static class Constants
+namespace FromTheForge.Model;
+
+public static class Constants
 {
 	public static string Register = "/api/auth/register";
 	public static string Login = "/api/auth/login";

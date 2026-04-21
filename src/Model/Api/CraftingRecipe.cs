@@ -1,4 +1,6 @@
-﻿public class CraftingRecipe
+namespace FromTheForge.Model;
+
+public class CraftingRecipe
 {
 	public string id { get; set; } = "";
 	public string name { get; set; } = "";

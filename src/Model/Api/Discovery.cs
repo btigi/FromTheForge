@@ -1,4 +1,6 @@
-﻿public class Discovery
+namespace FromTheForge.Model;
+
+public class Discovery
 {
 	public string id { get; set; } = "";
 	public string name { get; set; } = "";

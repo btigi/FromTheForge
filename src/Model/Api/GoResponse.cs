@@ -1,4 +1,6 @@
-﻿public class GoResponse
+namespace FromTheForge.Model;
+
+public class GoResponse
 {
 	public From from { get; set; } = new From();
 	public Destination destination { get; set; } = new Destination();

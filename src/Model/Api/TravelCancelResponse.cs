@@ -1,4 +1,6 @@
-﻿public class TravelCancelResponse
+namespace FromTheForge.Model;
+
+public class TravelCancelResponse
 {
 	public bool cancelled { get; set; }
 	public Position position { get; set; } = new Position();

@@ -1,4 +1,6 @@
-﻿public class AcceptedQuest
+namespace FromTheForge.Model;
+
+public class AcceptedQuest
 {
 	public string id { get; set; } = "";
 	public string name { get; set; } = "";

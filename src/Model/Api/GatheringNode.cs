@@ -1,4 +1,6 @@
-﻿public class GatheringNode
+namespace FromTheForge.Model;
+
+public class GatheringNode
 {
 	public string poiId { get; set; } = "";
 	public string name { get; set; } = "";

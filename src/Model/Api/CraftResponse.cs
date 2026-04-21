@@ -1,4 +1,6 @@
-﻿public class CraftResponse
+namespace FromTheForge.Model;
+
+public class CraftResponse
 {
 	public string crafted { get; set; } = "";
 	public string itemId { get; set; } = "";

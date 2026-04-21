@@ -1,4 +1,6 @@
-﻿public class ShopStockItem
+namespace FromTheForge.Model;
+
+public class ShopStockItem
 {
 	public string id { get; set; } = "";
 	public string name { get; set; } = "";

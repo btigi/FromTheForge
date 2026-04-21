@@ -1,4 +1,6 @@
-﻿public class CreateCharacterResponse
+namespace FromTheForge.Model;
+
+public class CreateCharacterResponse
 {
 	public string Error { get; set; } = "";
 	public string[] Message { get; set; } = [];

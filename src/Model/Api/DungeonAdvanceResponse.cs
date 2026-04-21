@@ -1,4 +1,6 @@
-﻿public class DungeonAdvanceResponse
+namespace FromTheForge.Model;
+
+public class DungeonAdvanceResponse
 {
 	public int roomIndex { get; set; }
 	public string roomType { get; set; } = "";

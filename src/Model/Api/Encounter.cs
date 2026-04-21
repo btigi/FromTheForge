@@ -1,4 +1,6 @@
-﻿public class Encounter
+namespace FromTheForge.Model;
+
+public class Encounter
 {
 	public string monsterId { get; set; } = "";
 	public string monsterName { get; set; } = "";

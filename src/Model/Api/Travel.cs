@@ -1,4 +1,6 @@
-﻿public class Travel
+namespace FromTheForge.Model;
+
+public class Travel
 {
 	public bool isTraveling { get; set; }
 	public Position position { get; set; } = new Position();

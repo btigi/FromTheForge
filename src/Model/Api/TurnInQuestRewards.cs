@@ -1,4 +1,6 @@
-﻿public class TurnInQuestRewards
+namespace FromTheForge.Model;
+
+public class TurnInQuestRewards
 {
 	public int xp { get; set; }
 	public int gold { get; set; }

@@ -1,4 +1,6 @@
-﻿public class TravelResponse
+namespace FromTheForge.Model;
+
+public class TravelResponse
 {
 	public string direction { get; set; } = "";
 	public From from { get; set; } = new From();

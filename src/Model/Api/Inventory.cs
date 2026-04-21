@@ -1,4 +1,6 @@
-﻿public class Inventory
+namespace FromTheForge.Model;
+
+public class Inventory
 {
 	public Equipment equipment { get; set; } = new Equipment();
 	public Backpack[] backpack { get; set; } = [];

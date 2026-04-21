@@ -1,4 +1,6 @@
-﻿public class UseResponse
+namespace FromTheForge.Model;
+
+public class UseResponse
 {
 	public string used { get; set; } = "";
 	public string message { get; set; } = "";

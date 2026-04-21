@@ -1,4 +1,6 @@
-﻿public class CreateCharacter
+namespace FromTheForge.Model;
+
+public class CreateCharacter
 {
 	public string Name { get; set; } = "";
 	public string RaceId { get; set; } = "";

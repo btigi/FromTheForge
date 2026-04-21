@@ -1,4 +1,6 @@
-﻿public class MapResponse
+namespace FromTheForge.Model;
+
+public class MapResponse
 {
 	public int width { get; set; }
 	public int height { get; set; }

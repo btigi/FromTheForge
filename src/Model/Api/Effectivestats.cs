@@ -1,4 +1,6 @@
-﻿public class Effectivestats
+namespace FromTheForge.Model;
+
+public class Effectivestats
 {
 	public int strength { get; set; }
 	public int dexterity { get; set; }

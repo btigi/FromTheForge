@@ -1,4 +1,6 @@
-﻿public class LearnSpellResponse
+namespace FromTheForge.Model;
+
+public class LearnSpellResponse
 {
 	public string learned { get; set; } = "";
 	public string message { get; set; } = "";

@@ -1,4 +1,6 @@
-﻿public class CombatActionResult
+namespace FromTheForge.Model;
+
+public class CombatActionResult
 {
 	public string outcome { get; set; } = "";
 	public int turn { get; set; }

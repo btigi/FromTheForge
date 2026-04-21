@@ -1,4 +1,6 @@
-﻿public class DungeonAdvanceMonster
+namespace FromTheForge.Model;
+
+public class DungeonAdvanceMonster
 {
 	public string name { get; set; } = "";
 	public int level { get; set; }

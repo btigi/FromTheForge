@@ -1,4 +1,6 @@
-﻿public class Backpack
+namespace FromTheForge.Model;
+
+public class Backpack
 {
 	public string itemId { get; set; } = "";
 	public string name { get; set; } = "";

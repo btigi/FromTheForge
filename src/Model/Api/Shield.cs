@@ -1,4 +1,6 @@
-﻿public class Shield
+namespace FromTheForge.Model;
+
+public class Shield
 {
 	public string id { get; set; } = "";
 	public string name { get; set; } = "";

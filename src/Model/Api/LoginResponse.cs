@@ -1,4 +1,6 @@
-﻿public class LoginResponse
+namespace FromTheForge.Model;
+
+public class LoginResponse
 {
 	public string AccessToken { get; set; } = "";
 	public string RefreshToken { get; set; } = "";

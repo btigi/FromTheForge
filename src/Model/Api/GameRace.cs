@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+using System.Text.Json;
+
+namespace FromTheForge.Model;
 
 public class GameRace
 {

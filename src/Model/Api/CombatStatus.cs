@@ -1,4 +1,6 @@
-﻿public class CombatStatus
+namespace FromTheForge.Model;
+
+public class CombatStatus
 {
 	public bool inCombat { get; set; }
 	public int turn { get; set; }

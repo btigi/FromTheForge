@@ -1,4 +1,6 @@
-﻿public class HarvestResponse
+namespace FromTheForge.Model;
+
+public class HarvestResponse
 {
 	public string harvested { get; set; } = "";
 	public string itemId { get; set; } = "";

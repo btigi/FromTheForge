@@ -1,4 +1,6 @@
-﻿public class InnRestResponse
+namespace FromTheForge.Model;
+
+public class InnRestResponse
 {
 	public bool rested { get; set; }
 	public string type { get; set; } = "";

@@ -1,4 +1,6 @@
-﻿public class Boots
+namespace FromTheForge.Model;
+
+public class Boots
 {
 	public string id { get; set; } = "";
 	public string name { get; set; } = "";

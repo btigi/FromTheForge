@@ -1,4 +1,6 @@
-﻿public class Xp
+namespace FromTheForge.Model;
+
+public class Xp
 {
 	public int xpGained { get; set; }
 	public int totalXp { get; set; }

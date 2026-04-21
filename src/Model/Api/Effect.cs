@@ -1,4 +1,6 @@
-﻿public class Effect
+namespace FromTheForge.Model;
+
+public class Effect
 {
 	public string type { get; set; } = "";
 	public int duration { get; set; }

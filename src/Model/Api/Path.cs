@@ -1,4 +1,6 @@
-﻿public class Path
+namespace FromTheForge.Model;
+
+public class Path
 {
 	public int x { get; set; }
 	public int y { get; set; }

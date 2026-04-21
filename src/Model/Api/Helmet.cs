@@ -1,4 +1,6 @@
-﻿public class Helmet
+namespace FromTheForge.Model;
+
+public class Helmet
 {
 	public string id { get; set; } = "";
 	public string name { get; set; } = "";

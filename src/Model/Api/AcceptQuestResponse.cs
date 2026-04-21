@@ -1,4 +1,6 @@
-﻿public class AcceptQuestResponse
+namespace FromTheForge.Model;
+
+public class AcceptQuestResponse
 {
 	public string message { get; set; } = "";
 	public AcceptedQuest quest { get; set; } = new AcceptedQuest();

@@ -1,4 +1,6 @@
-﻿public class SellItem
+namespace FromTheForge.Model;
+
+public class SellItem
 {
 	public string itemId { get; set; } = "";
 	public int quantity { get; set; }

@@ -1,4 +1,6 @@
-﻿public class CraftingSkillEntry
+namespace FromTheForge.Model;
+
+public class CraftingSkillEntry
 {
 	public int level { get; set; }
 	public int xp { get; set; }

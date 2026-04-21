@@ -1,4 +1,6 @@
-﻿public class RestStatus
+namespace FromTheForge.Model;
+
+public class RestStatus
 {
 	public bool resting { get; set; }
 	public string type { get; set; } = "";

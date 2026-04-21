@@ -1,4 +1,6 @@
-﻿public class TurnInQuestRewardItem
+namespace FromTheForge.Model;
+
+public class TurnInQuestRewardItem
 {
 	public string itemId { get; set; } = "";
 	public int quantity { get; set; }

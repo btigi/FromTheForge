@@ -1,5 +1,7 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+
+namespace FromTheForge.Model;
 
 public class GameSpellDef
 {

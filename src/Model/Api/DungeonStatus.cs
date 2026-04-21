@@ -1,4 +1,6 @@
-﻿public class DungeonStatus
+namespace FromTheForge.Model;
+
+public class DungeonStatus
 {
 	public bool inDungeon { get; set; }
 	public string dungeonId { get; set; } = "";

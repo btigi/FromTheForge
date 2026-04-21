@@ -1,4 +1,6 @@
-﻿public class EquipResponse
+namespace FromTheForge.Model;
+
+public class EquipResponse
 {
 	public Equipped equipped { get; set; } = new Equipped();
 	public Unequipped unequipped { get; set; } = new Unequipped();

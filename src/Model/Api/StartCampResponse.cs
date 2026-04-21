@@ -1,4 +1,6 @@
-﻿public class StartCampResponse
+namespace FromTheForge.Model;
+
+public class StartCampResponse
 {
 	public bool resting { get; set; }
 	public string type { get; set; } = "";

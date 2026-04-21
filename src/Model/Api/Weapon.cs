@@ -1,4 +1,6 @@
-﻿public class Weapon
+namespace FromTheForge.Model;
+
+public class Weapon
 {
 	public string id { get; set; } = "";
 	public string name { get; set; } = "";

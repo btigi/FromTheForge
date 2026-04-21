@@ -1,4 +1,6 @@
-﻿public class Ring
+namespace FromTheForge.Model;
+
+public class Ring
 {
 	public string id { get; set; } = "";
 	public string name { get; set; } = "";
