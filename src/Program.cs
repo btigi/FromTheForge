@@ -355,6 +355,13 @@ commands["map"] = ("Get world map", async () =>
 
 	var mapResponse = await Get<MapResponse>(Constants.Map, token);
 
+	if (mapResponse == null)
+	{
+		Console.WriteLine($"Error");
+		Console.WriteLine($"Received no parsable map response");
+		return;
+	}
+
 	if (submap == "map")
 	{
 		if (mapResponse?.terrain != null)

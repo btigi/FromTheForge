@@ -1,4 +1,4 @@
 ﻿public class Craft
 {
-	public string recipeId { get; set; }
+	public string recipeId { get; set; } = "";
 }

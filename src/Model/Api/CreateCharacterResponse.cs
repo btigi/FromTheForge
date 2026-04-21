@@ -1,13 +1,13 @@
 ﻿public class CreateCharacterResponse
 {
-	public string Error { get; set; }
+	public string Error { get; set; } = "";
 	public string[] Message { get; set; }
 
-	public string id { get; set; }
-	public string user_id { get; set; }
-	public string name { get; set; }
-	public string race_id { get; set; }
-	public string class_id { get; set; }
+	public string id { get; set; } = "";
+	public string user_id { get; set; } = "";
+	public string name { get; set; } = "";
+	public string race_id { get; set; } = "";
+	public string class_id { get; set; } = "";
 	public int level { get; set; }
 	public int xp { get; set; }
 	public int hp { get; set; }

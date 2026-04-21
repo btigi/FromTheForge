@@ -1,8 +1,8 @@
 ﻿public class CraftingRecipe
 {
-	public string id { get; set; }
-	public string name { get; set; }
-	public string skill { get; set; }
+	public string id { get; set; } = "";
+	public string name { get; set; } = "";
+	public string skill { get; set; } = "";
 	public int minLevel { get; set; }
 	public int xpReward { get; set; }
 	public CraftingIngredient[] ingredients { get; set; }

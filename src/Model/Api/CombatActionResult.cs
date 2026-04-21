@@ -1,6 +1,6 @@
 ﻿public class CombatActionResult
 {
-	public string outcome { get; set; }
+	public string outcome { get; set; } = "";
 	public int turn { get; set; }
 	public string[] log { get; set; }
 	public Monster monster { get; set; }
@@ -12,5 +12,5 @@
 	public int goldLost { get; set; }
 	public int xpLost { get; set; }
 	public int hp { get; set; }
-	public string message { get; set; }
+	public string message { get; set; } = "";
 }

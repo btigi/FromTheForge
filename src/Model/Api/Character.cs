@@ -1,7 +1,7 @@
 ﻿public class Character
 {
 	public string id { get; set; }
-	public string name { get; set; }
+	public string name { get; set; } = "";
 	public Race race { get; set; }
 	public @Class @class { get; set; }
 	public int level { get; set; }
