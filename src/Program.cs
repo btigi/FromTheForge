@@ -170,20 +170,20 @@ commands["get"] = ("Get my character", async () =>
 		return;
 	}
 
-	Console.WriteLine($"{character.name} {character.race.name}, {character.@class.name}");
+	Console.WriteLine($"{character.name}, {character.race.name}, {character.@class.name}");
 	Console.WriteLine($"Level: {character.level} XP: {character.xp}/{character.xpToNextLevel}");
 	Console.WriteLine($"{character.hp}/{character.maxHp}HP, {character.mana}/{character.maxMana}mana, {character.ac}AC, {character.gold}gold");
-	Console.WriteLine($"Base:  STR {character.strength} DEX {character.dexterity} CON {character.constitution} INT {character.intelligence} WIS {character.wisdom} CHA {character.charisma}");
+	Console.WriteLine($"Base:       STR {character.strength} DEX {character.dexterity} CON {character.constitution} INT {character.intelligence} WIS {character.wisdom} CHA {character.charisma}");
 	Console.WriteLine($"Effective:  STR {character.effectiveStats.strength} DEX {character.effectiveStats.dexterity} CON {character.effectiveStats.constitution} INT {character.effectiveStats.intelligence} WIS {character.effectiveStats.wisdom} CHA {character.effectiveStats.charisma}");
-	Console.WriteLine($"In Dungeon: {character.inDungeon}");
-	Console.WriteLine($"In Combat: {character.inCombat}");
+	Console.WriteLine($"In Dungeon: {BoolToString(character.inDungeon)}");
+	Console.WriteLine($"In Combat: {BoolToString(character.inCombat)}");
 	var travelDestination = String.Empty;
 	if (character.travel.isTraveling)
 	{
 		travelDestination = $"[{character.travel.destination.x},{character.travel.destination.y}] ETA: {character.travel.eta}";
 	}
 	Console.WriteLine($"Location: [{character.position.x},{character.position.y}]");
-	Console.WriteLine($"Travelling: {character.travel.isTraveling} {travelDestination}");
+	Console.WriteLine($"Travelling: {BoolToString(character.travel.isTraveling)} {travelDestination}");
 	if (character.unspentStatPoints > 0)
 	{
 		Console.WriteLine($"** {character.unspentStatPoints} unspent stat points **");
@@ -191,7 +191,7 @@ commands["get"] = ("Get my character", async () =>
 }
 );
 
-commands["allocate"] = ("Placeholder: allocate stat point on level up", async () =>
+commands["allocate"] = ("Allocate stat point on level up", async () =>
 {
 	if (string.IsNullOrWhiteSpace(token))
 	{
@@ -282,10 +282,7 @@ commands["travelstatus"] = ("Get travel status", async () =>
 		{
 			foreach (var discovery in travelStatusResponse.discoveries)
 			{
-				Console.WriteLine($"{discovery.name} ({discovery.id}) {discovery.terrain} {discovery.type} {discovery.category} [{discovery.x},{discovery.y}]");
-				Console.WriteLine($"{discovery.description}");
-				Console.WriteLine($"{discovery.level_min}-{discovery.level_max}");
-				Console.WriteLine($"{discovery.discoveredAt}");
+				PrintDiscovery(discovery);
 			}
 		}
 		if (travelStatusResponse.xp != null)
@@ -340,9 +337,7 @@ commands["travelcancel"] = ("Cancel active travel", async () =>
 	{
 		foreach (var discovery in travelCancelResponse.discoveries)
 		{
-			Console.WriteLine($"{discovery.name} [{discovery.x},{discovery.y}]");
-			Console.WriteLine($"  {discovery.description}");
-			Console.WriteLine($"  {discovery.category} {discovery.type} {discovery.level_min}-{discovery.level_max}");
+			PrintDiscovery(discovery);
 		}
 	}
 }
@@ -387,7 +382,7 @@ commands["map"] = ("Get world map", async () =>
 	{
 		if (mapResponse.pois != null)
 		{
-			foreach (var poi in mapResponse.pois)
+			foreach (var poi in mapResponse.pois.OrderBy(o => o.name))
 			{
 				Console.WriteLine($"{poi.name} [{poi.x},{poi.y}]");
 				Console.WriteLine($"  {poi.description}");
@@ -396,7 +391,7 @@ commands["map"] = ("Get world map", async () =>
 		}
 		else
 		{
-			Console.WriteLine("No pois.");
+			Console.WriteLine("No points of interest.");
 		}
 	}
 
@@ -404,11 +399,9 @@ commands["map"] = ("Get world map", async () =>
 	{
 		if (mapResponse.discoveries != null)
 		{
-			foreach (var discovery in mapResponse.discoveries)
+			foreach (var discovery in mapResponse.discoveries.OrderBy(o => o.name))
 			{
-				Console.WriteLine($"{discovery.name} [{discovery.x},{discovery.y}]");
-				Console.WriteLine($"  {discovery.description}");
-				Console.WriteLine($"  {discovery.category} {discovery.type} {discovery.level_min}-{discovery.level_max}");
+				PrintDiscovery(discovery);
 			}
 		}
 		else
@@ -443,9 +436,9 @@ commands["mapdetail"] = ("Cell detail at x,y", async () =>
 		return;
 	}
 	Console.WriteLine("X coordinate");
-	var xMapDetail = Console.ReadLine();
+	var xMapDetail = ReadValidatedIntInput(0, 100);
 	Console.WriteLine("Y coordinate");
-	var yMapDetail = Console.ReadLine();
+	var yMapDetail = ReadValidatedIntInput(0, 100);
 	var mapDetailResponse = await Get<MapDetailResponseDto>($"{Constants.MapDetail}/{xMapDetail}/{yMapDetail}", token);
 	Console.WriteLine(mapDetailResponse.terrain);
 	if (mapDetailResponse.poi != null)
@@ -484,7 +477,7 @@ commands["combatstatus"] = ("Get combat status", async () =>
 }
 );
 
-commands["combataction"] = ("Combat action (attack, cast, use_item, flee)", async () =>
+commands["combataction"] = ("Combat action", async () =>
 {
 	if (string.IsNullOrWhiteSpace(token))
 	{
@@ -619,7 +612,7 @@ commands["pickup"] = ("Pick up an item", async () =>
 	Console.WriteLine("itemid");
 	var itemid = Console.ReadLine();
 	Console.WriteLine("quantity");
-	var quantity = Console.ReadLine();
+	var quantity = ReadValidatedIntInput(1, 20);
 	var pickup = new Pickup();
 	pickup.itemId = itemid;
 	pickup.quantity = Convert.ToInt32(quantity);
@@ -639,7 +632,7 @@ commands["drop"] = ("Drop an item", async () =>
 	Console.WriteLine("itemid");
 	var itemidDropped = Console.ReadLine();
 	Console.WriteLine("quantity");
-	var quantityDropped = Console.ReadLine();
+	var quantityDropped = ReadValidatedIntInput(1, 20);
 	var drop = new Drop();
 	drop.itemId = itemidDropped;
 	drop.quantity = Convert.ToInt32(quantityDropped);
@@ -797,7 +790,7 @@ commands["restcamp"] = ("Start camping", async () =>
 		return;
 	}
 	Console.WriteLine("duration seconds (10-600)");
-	var campDuration = Console.ReadLine();
+	var campDuration = ReadValidatedIntInput(10, 600);
 	var startCamp = new StartCampRequest();
 	startCamp.duration = Convert.ToInt32(campDuration);
 	jsonString = JsonSerializer.Serialize(startCamp, options);
@@ -939,8 +932,7 @@ commands["shopbuy"] = ("Buy items", async () =>
 	Console.WriteLine("itemId");
 	var buyItemId = Console.ReadLine();
 	Console.WriteLine("quantity");
-	var buyQtyLine = Console.ReadLine();
-	var buyQty = string.IsNullOrWhiteSpace(buyQtyLine) ? 1 : Convert.ToInt32(buyQtyLine);
+	var buyQty = ReadValidatedIntInput(1, 20);
 	var buyItem = new BuyItem();
 	buyItem.itemId = buyItemId;
 	buyItem.quantity = buyQty;
@@ -963,8 +955,7 @@ commands["shopsell"] = ("Sell items", async () =>
 	Console.WriteLine("itemId");
 	var sellItemId = Console.ReadLine();
 	Console.WriteLine("quantity");
-	var sellQtyLine = Console.ReadLine();
-	var sellQty = string.IsNullOrWhiteSpace(sellQtyLine) ? 1 : Convert.ToInt32(sellQtyLine);
+	var sellQty = ReadValidatedIntInput(1, 20);
 	var sellItem = new SellItem();
 	sellItem.itemId = sellItemId;
 	sellItem.quantity = sellQty;
@@ -1247,6 +1238,10 @@ commands["gatheringnodes"] = ("Nearby gathering nodes", async () =>
 			Console.WriteLine($"{node.ready} ({node.cooldownMinutes}) XP: [{node.xpReward}]");
 		}
 	}
+	else
+	{
+		Console.WriteLine($"No nearby gathering nodes");
+	}
 }
 );
 
@@ -1463,6 +1458,7 @@ while (action != "q")
 		Console.WriteLine($"Unknown command '{action}'. Type help for commands, q to quit.");
 	else
 		await entry.Run();
+	Console.WriteLine();
 	Console.Write(">");
 	action = Console.ReadLine();
 }
@@ -1545,7 +1541,7 @@ int ReadValidatedIntInput(int min, int max)
 {
 	Console.Write(">");
 	var response = Console.ReadLine();
-	while (!(Int32.TryParse(response, out var value) && value >= min && value <= max))
+    while (!(int.TryParse(response, out var value) && value >= min && value <= max))
 	{
 		Console.WriteLine($"Invalid response. Valid range {min}-{max}");
 		Console.Write(">");
@@ -1557,6 +1553,13 @@ int ReadValidatedIntInput(int min, int max)
 string BoolToString(bool boolean)
 {
 	return boolean ? "Yes" : "No";
+}
+
+void PrintDiscovery(Discovery discovery)
+{
+	Console.WriteLine($"{discovery.name} ({discovery.id}) {discovery.terrain} [{discovery.x},{discovery.y}]");
+	Console.WriteLine($"  {discovery.description}");
+	Console.WriteLine($"  {discovery.category} {discovery.type} {discovery.level_min}-{discovery.level_max}");
 }
 
 static DateTime? GetBuildDate(Assembly assembly)
