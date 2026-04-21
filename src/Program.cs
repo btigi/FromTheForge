@@ -24,9 +24,10 @@ Console.WriteLine(@"  ______                     _   _            ______
                                                             |___/   ");
 
 
-var buildDate = GetBuildDate(Assembly.GetExecutingAssembly());
+var assembly = Assembly.GetExecutingAssembly();
+var buildDate = GetBuildDate(assembly);
 var buildDateString = buildDate?.ToString("yyyy/MM/dd@HH:mm") ?? "unknown";
-Console.WriteLine($"Build {buildDateString}");
+Console.WriteLine($"Build {GetAppVersion(assembly)} — {buildDateString}");
 
 var token = string.Empty;
 
@@ -1574,6 +1575,18 @@ string GetLevelString(int? min, int? max)
 		return $"{min}-{max}";
 	}
 	return string.Empty;
+}
+
+static string GetAppVersion(Assembly assembly)
+{
+	var informational = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+	if (!string.IsNullOrWhiteSpace(informational))
+	{
+		var plus = informational.IndexOf('+');
+		return plus >= 0 ? informational[..plus] : informational;
+	}
+
+	return assembly.GetName().Version?.ToString() ?? "0.0.0.0";
 }
 
 static DateTime? GetBuildDate(Assembly assembly)
