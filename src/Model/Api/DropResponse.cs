@@ -1,6 +1,6 @@
 ﻿public class DropResponse
 {
-	public string dropped { get; set; }
+	public string dropped { get; set; } = "";
 	public int quantity { get; set; }
-	public string message { get; set; }
+	public string message { get; set; } = "";
 }

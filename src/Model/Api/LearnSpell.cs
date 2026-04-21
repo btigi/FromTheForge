@@ -1,4 +1,4 @@
 ﻿public class LearnSpell
 {
-	public string spellId { get; set; }
+	public string spellId { get; set; } = "";
 }

@@ -1,4 +1,4 @@
 ﻿public class EnterDungeon
 {
-	public string poiId { get; set; }
+	public string poiId { get; set; } = "";
 }
