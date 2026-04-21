@@ -1,4 +1,4 @@
-﻿public class MapResponseDto
+﻿public class MapResponse
 {
 	public int width { get; set; }
 	public int height { get; set; }

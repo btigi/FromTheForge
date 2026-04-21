@@ -1,4 +1,4 @@
-﻿public class TravelCancelResponseDto
+﻿public class TravelCancelResponse
 {
 	public bool cancelled { get; set; }
 	public Position position { get; set; }

@@ -1,4 +1,4 @@
-﻿public class GoResponseDto
+﻿public class GoResponse
 {
 	public From from { get; set; }
 	public Destination destination { get; set; }

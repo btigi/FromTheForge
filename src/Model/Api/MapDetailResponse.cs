@@ -1,4 +1,4 @@
-﻿public class MapDetailResponseDto
+﻿public class MapDetailResponse
 {
 	public int x { get; set; }
 	public int y { get; set; }

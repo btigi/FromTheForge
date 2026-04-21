@@ -1,4 +1,4 @@
 ﻿public class AcceptQuest
 {
-	public string questId { get; set; }
+	public string questId { get; set; } = "";
 }

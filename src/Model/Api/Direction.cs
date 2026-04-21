@@ -1,4 +1,4 @@
-﻿public class TravelDto
+﻿public class Move
 {
 	public string Direction { get; set; }
 }

@@ -1,4 +1,4 @@
 ﻿public class AbandonQuest
 {
-	public string questId { get; set; }
+	public string questId { get; set; } = "";
 }

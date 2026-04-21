@@ -1,4 +1,4 @@
-﻿public class TravelStatusResponseDto
+﻿public class TravelStatusResponse
 {
 	public bool isTraveling { get; set; }
 	public Position position { get; set; }

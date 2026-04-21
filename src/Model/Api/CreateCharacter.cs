@@ -1,4 +1,4 @@
-﻿public class CreateCharacterDto
+﻿public class CreateCharacter
 {
 	public string Name { get; set; }
 	public string RaceId { get; set; }

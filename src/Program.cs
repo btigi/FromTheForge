@@ -47,11 +47,11 @@ commands["register"] = ("Register account", async () =>
 		registerPassword = Console.ReadLine();
 	}
 
-	var register = new RegisterDto();
+	var register = new Register();
 	register.Email = registerEmail;
 	register.Password = registerPassword;
 	jsonString = JsonSerializer.Serialize(register, options);
-	var registerResponse = await Post<RegisterResponseDto>(jsonString, Constants.Register);
+	var registerResponse = await Post<RegisterResponse>(jsonString, Constants.Register);
 	Console.WriteLine(registerResponse);
 }
 );
@@ -70,11 +70,11 @@ commands["login"] = ("Login", async () =>
 		Console.WriteLine("Password");
 		loginPassword = Console.ReadLine();
 	}
-	var login = new LoginDto();
+	var login = new Login();
 	login.Email = loginEmail;
 	login.Password = loginPassword;
 	jsonString = JsonSerializer.Serialize(login, options);
-	var loginResponse = await Post<LoginResponseDto>(jsonString, Constants.Login);
+	var loginResponse = await Post<LoginResponse>(jsonString, Constants.Login);
 	if (!string.IsNullOrEmpty(loginResponse.Error))
 	{
 		Console.WriteLine(loginResponse.Error);
@@ -92,7 +92,7 @@ commands["me"] = ("Get authenticated profile", async () =>
 		Console.WriteLine("You must be logged in to use this command.");
 		return;
 	}
-	var meResponse = await Get<MeResponseDto>(Constants.Me, token);
+	var meResponse = await Get<MeResponse>(Constants.Me, token);
 	Console.WriteLine($"Id: {meResponse.Id}");
 	Console.WriteLine($"Email: {meResponse.Email}");
 }
@@ -124,7 +124,7 @@ commands["create"] = ("Create character", async () =>
 	Console.WriteLine("CHA");
 	var cha = ReadValidatedIntInput(8, 15);
 	//TODO: point buy validation?
-	var createCharacter = new CreateCharacterDto();
+	var createCharacter = new CreateCharacter();
 	createCharacter.Name = name;
 	createCharacter.RaceId = race;
 	createCharacter.ClassId = @class;
@@ -135,7 +135,7 @@ commands["create"] = ("Create character", async () =>
 	createCharacter.Wisdom = Convert.ToInt32(wis);
 	createCharacter.Charisma = Convert.ToInt32(cha);
 	jsonString = JsonSerializer.Serialize(createCharacter, options);
-	var createCharacterResponse = await Post<CreateCharacterResponseDto>(jsonString, Constants.CreateCharacter, token);
+	var createCharacterResponse = await Post<CreateCharacterResponse>(jsonString, Constants.CreateCharacter, token);
 	if (String.IsNullOrEmpty(createCharacterResponse.Error))
 	{
 		Console.WriteLine($"Created character");
@@ -217,10 +217,10 @@ commands["move"] = ("Move one step (north/east/south/west)", async () =>
 	}
 	Console.WriteLine("Direction");
 	var direction = ReadValidatedInput(["north", "east", "south", "west"]);
-	var travel = new TravelDto();
+	var travel = new Move();
 	travel.Direction = direction;
 	jsonString = JsonSerializer.Serialize(travel, options);
-	var travelResponse = await Post<TravelResponseDto>(jsonString, Constants.Travel, token);
+	var travelResponse = await Post<TravelResponse>(jsonString, Constants.Travel, token);
 	if (String.IsNullOrEmpty(travelResponse.error))
 	{
 		Console.WriteLine($"Terrain {travelResponse.terrain}");
@@ -246,11 +246,11 @@ commands["go"] = ("Pathfind to coordinates", async () =>
 	var x = ReadValidatedIntInput(0, 100);
 	Console.WriteLine("Y coordinate");
 	var y = ReadValidatedIntInput(0, 100);
-	var go = new GoDto();
+	var go = new Go();
 	go.x = Convert.ToInt32(x);
 	go.y = Convert.ToInt32(y);
 	jsonString = JsonSerializer.Serialize(go, options);
-	var goResponse = await Post<GoResponseDto>(jsonString, Constants.Go, token);
+	var goResponse = await Post<GoResponse>(jsonString, Constants.Go, token);
 	if (String.IsNullOrEmpty(goResponse.error))
 	{
 		Console.WriteLine($"Started at {goResponse.startedAt}, eta {goResponse.eta}");
@@ -271,7 +271,7 @@ commands["travelstatus"] = ("Get travel status", async () =>
 		Console.WriteLine("You must be logged in to use this command.");
 		return;
 	}
-	var travelStatusResponse = await Get<TravelStatusResponseDto>(Constants.TravelStatus, token);
+	var travelStatusResponse = await Get<TravelStatusResponse>(Constants.TravelStatus, token);
 	if (travelStatusResponse.isTraveling)
 	{
 		Console.WriteLine($"From [{travelStatusResponse.position.x},{travelStatusResponse.position.y}] to [{travelStatusResponse.destination.x},{travelStatusResponse.destination.y}]");
@@ -325,7 +325,7 @@ commands["travelcancel"] = ("Cancel active travel", async () =>
 		Console.WriteLine("You must be logged in to use this command.");
 		return;
 	}
-	var travelCancelResponse = await Post<TravelCancelResponseDto>(string.Empty, Constants.TravelCancel, token);
+	var travelCancelResponse = await Post<TravelCancelResponse>(string.Empty, Constants.TravelCancel, token);
 	if (travelCancelResponse.cancelled)
 	{
 		Console.WriteLine("Travel cancelled");
@@ -354,7 +354,7 @@ commands["map"] = ("Get world map", async () =>
 	Console.WriteLine("Map command");
 	var submap = ReadValidatedInput(["map", "points", "discoveries"]);
 
-	var mapResponse = await Get<MapResponseDto>(Constants.Map, token);
+	var mapResponse = await Get<MapResponse>(Constants.Map, token);
 
 	if (submap == "map")
 	{
@@ -437,7 +437,7 @@ commands["mapdetail"] = ("Cell detail at x,y", async () =>
 	var xMapDetail = ReadValidatedIntInput(0, 100);
 	Console.WriteLine("Y coordinate");
 	var yMapDetail = ReadValidatedIntInput(0, 100);
-	var mapDetailResponse = await Get<MapDetailResponseDto>($"{Constants.MapDetail}/{xMapDetail}/{yMapDetail}", token);
+	var mapDetailResponse = await Get<MapDetailResponse>($"{Constants.MapDetail}/{xMapDetail}/{yMapDetail}", token);
 	Console.WriteLine(mapDetailResponse.terrain);
 	if (mapDetailResponse.poi != null)
 	{
