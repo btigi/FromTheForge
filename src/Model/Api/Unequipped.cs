@@ -1,5 +1,5 @@
 ﻿public class Unequipped
 {
-	public string slot { get; set; }
-	public Item item { get; set; }
+	public string slot { get; set; } = "";
+	public Item item { get; set; } = new Item();
 }

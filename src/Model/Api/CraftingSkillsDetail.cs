@@ -1,6 +1,6 @@
 ﻿public class CraftingSkillsDetail
 {
-	public CraftingSkillEntry blacksmithing { get; set; }
-	public CraftingSkillEntry alchemy { get; set; }
-	public CraftingSkillEntry woodworking { get; set; }
+	public CraftingSkillEntry blacksmithing { get; set; } = new CraftingSkillEntry();
+	public CraftingSkillEntry alchemy { get; set; } = new CraftingSkillEntry();
+	public CraftingSkillEntry woodworking { get; set; } = new CraftingSkillEntry();
 }

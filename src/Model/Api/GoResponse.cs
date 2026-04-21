@@ -1,8 +1,8 @@
 ﻿public class GoResponse
 {
-	public From from { get; set; }
-	public Destination destination { get; set; }
-	public Path[] path { get; set; }
+	public From from { get; set; } = new From();
+	public Destination destination { get; set; } = new Destination();
+	public Path[] path { get; set; } = [];
 	public int totalCells { get; set; }
 	public int travelSeconds { get; set; }
 	public DateTime startedAt { get; set; }

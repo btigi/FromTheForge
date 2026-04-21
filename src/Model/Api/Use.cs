@@ -1,4 +1,4 @@
 ﻿public class Use
 {
-	public string itemId { get; set; }
+	public string itemId { get; set; } = "";
 }

@@ -1,4 +1,4 @@
 ﻿public class Unequip
 {
-	public string slot { get; set; }
+	public string slot { get; set; } = "";
 }

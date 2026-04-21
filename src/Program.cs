@@ -48,8 +48,8 @@ commands["register"] = ("Register account", async () =>
 	}
 
 	var register = new Register();
-	register.Email = registerEmail;
-	register.Password = registerPassword;
+	register.Email = registerEmail ?? string.Empty;
+	register.Password = registerPassword ?? string.Empty;
 	jsonString = JsonSerializer.Serialize(register, options);
 	var registerResponse = await Post<RegisterResponse>(jsonString, Constants.Register);
 	Console.WriteLine(registerResponse);
@@ -71,8 +71,8 @@ commands["login"] = ("Login", async () =>
 		loginPassword = Console.ReadLine();
 	}
 	var login = new Login();
-	login.Email = loginEmail;
-	login.Password = loginPassword;
+	login.Email = loginEmail ?? string.Empty;
+	login.Password = loginPassword ?? string.Empty;
 	jsonString = JsonSerializer.Serialize(login, options);
 	var loginResponse = await Post<LoginResponse>(jsonString, Constants.Login);
 	if (!string.IsNullOrEmpty(loginResponse.Error))
@@ -125,7 +125,7 @@ commands["create"] = ("Create character", async () =>
 	var cha = ReadValidatedIntInput(8, 15);
 	//TODO: point buy validation?
 	var createCharacter = new CreateCharacter();
-	createCharacter.Name = name;
+	createCharacter.Name = name ?? string.Empty;
 	createCharacter.RaceId = race;
 	createCharacter.ClassId = @class;
 	createCharacter.Strength = Convert.ToInt32(str);
@@ -386,7 +386,7 @@ commands["map"] = ("Get world map", async () =>
 
 	if (submap == "points")
 	{
-		if (mapResponse.pois != null)
+		if (mapResponse != null && mapResponse.pois != null)
 		{
 			foreach (var poi in mapResponse.pois.OrderBy(o => o.name))
 			{
@@ -401,7 +401,7 @@ commands["map"] = ("Get world map", async () =>
 
 	if (submap == "discoveries")
 	{
-		if (mapResponse.discoveries != null)
+		if (mapResponse != null && mapResponse.discoveries != null)
 		{
 			foreach (var discovery in mapResponse.discoveries.OrderBy(o => o.name))
 			{
@@ -505,8 +505,8 @@ commands["combataction"] = ("Combat action", async () =>
 		Console.Write(">");
 		item = Console.ReadLine();
 	}
-	combatAction.spellId = spell;
-	combatAction.itemId = item;
+	combatAction.spellId = spell ?? string.Empty;
+	combatAction.itemId = item ?? string.Empty;
 	jsonString = JsonSerializer.Serialize(combatAction, options);
 	var combatActionResponse = await Post<CombatActionResult>(jsonString, Constants.CombatAction, token);
 	foreach (var log in combatActionResponse.log)
@@ -616,7 +616,7 @@ commands["pickup"] = ("Pick up an item", async () =>
 	Console.WriteLine("quantity");
 	var quantity = ReadValidatedIntInput(1, 20);
 	var pickup = new Pickup();
-	pickup.itemId = itemid;
+	pickup.itemId = itemid ?? string.Empty;
 	pickup.quantity = Convert.ToInt32(quantity);
 	jsonString = JsonSerializer.Serialize(pickup, options);
 	var pickupResponse = await Post<PickupResponse>(jsonString, Constants.Pickup, token);
@@ -636,7 +636,7 @@ commands["drop"] = ("Drop an item", async () =>
 	Console.WriteLine("quantity");
 	var quantityDropped = ReadValidatedIntInput(1, 20);
 	var drop = new Drop();
-	drop.itemId = itemidDropped;
+	drop.itemId = itemidDropped ?? string.Empty;
 	drop.quantity = Convert.ToInt32(quantityDropped);
 	jsonString = JsonSerializer.Serialize(drop, options);
 	var droppedResponse = await Post<DropResponse>(jsonString, Constants.Drop, token);
@@ -656,7 +656,7 @@ commands["equip"] = ("Equip an item", async () =>
 	Console.WriteLine("slot");
 	var slot = ReadValidatedInput(["weapon", "armor", "helmet", "shield", "leggings", "boots", "gloves", "ring1", "ring2", "amulet"]);
 	var equip = new Equip();
-	equip.itemId = itemidEquip;
+	equip.itemId = itemidEquip ?? string.Empty;
 	equip.slot = slot;
 	jsonString = JsonSerializer.Serialize(equip, options);
 	var equipResponse = await Post<EquipResponse>(jsonString, Constants.Equip, token);
@@ -695,7 +695,7 @@ commands["use"] = ("Use consumable", async () =>
 	Console.WriteLine("itemid");
 	var useitem = Console.ReadLine();
 	var use = new Use();
-	use.itemId = useitem;
+	use.itemId = useitem ?? string.Empty;
 	jsonString = JsonSerializer.Serialize(use, options);
 	var useResponse = await Post<UseResponse>(jsonString, Constants.Use, token);
 	if (!string.IsNullOrEmpty(useResponse.used))
@@ -745,7 +745,7 @@ commands["spelllearn"] = ("Learn spell", async () =>
 	Console.WriteLine("spellId");
 	var learnSpellId = Console.ReadLine();
 	var learnSpell = new LearnSpell();
-	learnSpell.spellId = learnSpellId;
+	learnSpell.spellId = learnSpellId ?? string.Empty;
 	jsonString = JsonSerializer.Serialize(learnSpell, options);
 	var learnSpellResponse = await Post<LearnSpellResponse>(jsonString, Constants.SpellsLearn, token);
 	Console.WriteLine(learnSpellResponse.message);
@@ -763,7 +763,7 @@ commands["spellcast"] = ("Cast spell (out of combat)", async () =>
 	Console.WriteLine("spellId");
 	var castSpellId = Console.ReadLine();
 	var castSpell = new CastSpell();
-	castSpell.spellId = castSpellId;
+	castSpell.spellId = castSpellId ?? string.Empty;
 	jsonString = JsonSerializer.Serialize(castSpell, options);
 	var castSpellResponse = await Post<CastSpellResponse>(jsonString, Constants.SpellsCast, token);
 	if (String.IsNullOrEmpty(castSpellResponse.error))
@@ -936,7 +936,7 @@ commands["shopbuy"] = ("Buy items", async () =>
 	Console.WriteLine("quantity");
 	var buyQty = ReadValidatedIntInput(1, 20);
 	var buyItem = new BuyItem();
-	buyItem.itemId = buyItemId;
+	buyItem.itemId = buyItemId ?? string.Empty;
 	buyItem.quantity = buyQty;
 	jsonString = JsonSerializer.Serialize(buyItem, options);
 	var buyResponse = await Post<BuyItemResponse>(jsonString, $"{Constants.Shops}/{buyTownId}/buy", token);
@@ -959,7 +959,7 @@ commands["shopsell"] = ("Sell items", async () =>
 	Console.WriteLine("quantity");
 	var sellQty = ReadValidatedIntInput(1, 20);
 	var sellItem = new SellItem();
-	sellItem.itemId = sellItemId;
+	sellItem.itemId = sellItemId ?? string.Empty;
 	sellItem.quantity = sellQty;
 	jsonString = JsonSerializer.Serialize(sellItem, options);
 	var sellResponse = await Post<SellItemResponse>(jsonString, $"{Constants.Shops}/{sellTownId}/sell", token);
@@ -1039,7 +1039,7 @@ commands["questaccept"] = ("Accept quest", async () =>
 	Console.WriteLine("questId");
 	var acceptQuestId = Console.ReadLine();
 	var acceptQuest = new AcceptQuest();
-	acceptQuest.questId = acceptQuestId;
+	acceptQuest.questId = acceptQuestId ?? string.Empty;
 	jsonString = JsonSerializer.Serialize(acceptQuest, options);
 	var acceptQuestResponse = await Post<AcceptQuestResponse>(jsonString, Constants.QuestAccept, token);
 	Console.WriteLine(acceptQuestResponse.message);
@@ -1056,7 +1056,7 @@ commands["questturnin"] = ("Complete a quest", async () =>
 	Console.WriteLine("questId");
 	var turnInQuestId = Console.ReadLine();
 	var turnInQuest = new TurnInQuest();
-	turnInQuest.questId = turnInQuestId;
+	turnInQuest.questId = turnInQuestId ?? string.Empty;
 	jsonString = JsonSerializer.Serialize(turnInQuest, options);
 	var turnInQuestResponse = await Post<TurnInQuestResponse>(jsonString, Constants.QuestTurnIn, token);
 	Console.WriteLine(turnInQuestResponse.message);
@@ -1080,7 +1080,7 @@ commands["questabandon"] = ("Abandon a quest", async () =>
 	Console.WriteLine("questId");
 	var abandonQuestId = Console.ReadLine();
 	var abandonQuest = new AbandonQuest();
-	abandonQuest.questId = abandonQuestId;
+	abandonQuest.questId = abandonQuestId ?? string.Empty;
 	jsonString = JsonSerializer.Serialize(abandonQuest, options);
 	var abandonQuestResponse = await Post<AbandonQuestResponse>(jsonString, Constants.QuestAbandon, token);
 	Console.WriteLine(abandonQuestResponse.message);
@@ -1126,7 +1126,7 @@ commands["dungeonenter"] = ("Enter dungeon", async () =>
 	Console.WriteLine("poiId");
 	var dungeonPoiId = Console.ReadLine();
 	var enterDungeon = new EnterDungeon();
-	enterDungeon.poiId = dungeonPoiId;
+	enterDungeon.poiId = dungeonPoiId ?? string.Empty;
 	jsonString = JsonSerializer.Serialize(enterDungeon, options);
 	var enterDungeonResponse = await Post<DungeonStatus>(jsonString, Constants.DungeonEnter, token);
 	if (String.IsNullOrEmpty(enterDungeonResponse.error))
@@ -1256,7 +1256,7 @@ commands["gatheringharvest"] = ("Harvest node", async () =>
 	Console.WriteLine("nodeId");
 	var harvestNodeId = Console.ReadLine();
 	var harvest = new Harvest();
-	harvest.nodeId = harvestNodeId;
+	harvest.nodeId = harvestNodeId ?? string.Empty;
 	jsonString = JsonSerializer.Serialize(harvest, options);
 	var harvestResponse = await Post<HarvestResponse>(jsonString, Constants.GatheringHarvest, token);
 	if (String.IsNullOrEmpty(harvestResponse.error))
@@ -1345,7 +1345,7 @@ commands["craftingcraft"] = ("Craft item", async () =>
 	Console.WriteLine("recipeId");
 	var recipeId = Console.ReadLine();
 	var craft = new Craft();
-	craft.recipeId = recipeId;
+	craft.recipeId = recipeId ?? string.Empty;
 	jsonString = JsonSerializer.Serialize(craft, options);
 	var craftResponse = await Post<CraftResponse>(jsonString, Constants.CraftingCraft, token);
 	if (String.IsNullOrEmpty(craftResponse.error))
@@ -1539,7 +1539,7 @@ int ReadValidatedIntInput(int min, int max)
 {
 	Console.Write(">");
 	var response = Console.ReadLine();
-    while (!(int.TryParse(response, out var value) && value >= min && value <= max))
+	while (!(int.TryParse(response, out var value) && value >= min && value <= max))
 	{
 		Console.WriteLine($"Invalid response. Valid range {min}-{max}");
 		Console.Write(">");

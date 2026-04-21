@@ -1,5 +1,5 @@
 ﻿public class UnequipResponse
 {
-	public Unequipped unequipped { get; set; }
-	public string message { get; set; }
+	public Unequipped unequipped { get; set; } = new Unequipped();
+	public string message { get; set; } = "";
 }

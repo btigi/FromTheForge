@@ -1,7 +1,7 @@
 ﻿public class CreateCharacterResponse
 {
 	public string Error { get; set; } = "";
-	public string[] Message { get; set; }
+	public string[] Message { get; set; } = [];
 
 	public string id { get; set; } = "";
 	public string user_id { get; set; } = "";
@@ -24,6 +24,6 @@
 	public int charisma { get; set; }
 	public int pos_x { get; set; }
 	public int pos_y { get; set; }
-	public Race race { get; set; }
-	public @Class @class { get; set; }
+	public Race race { get; set; } = new Race();
+	public @Class @class { get; set; } = new @Class();
 }

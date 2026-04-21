@@ -2,7 +2,7 @@
 {
 	public string cast { get; set; } = "";
 	public int manaCost { get; set; }
-	public Effect effect { get; set; }
+	public Effect effect { get; set; } = new Effect();
 	public string result { get; set; } = "";
 
 	public string error { get; set; } = "";

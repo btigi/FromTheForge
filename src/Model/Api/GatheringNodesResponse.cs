@@ -1,5 +1,5 @@
 ﻿public class GatheringNodesResponse
 {
-	public Position position { get; set; }
-	public GatheringNode[] nodes { get; set; }
+	public Position position { get; set; } = new Position();
+	public GatheringNode[] nodes { get; set; } = [];
 }

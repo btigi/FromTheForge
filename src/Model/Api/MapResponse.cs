@@ -2,7 +2,7 @@
 {
 	public int width { get; set; }
 	public int height { get; set; }
-	public string[][] terrain { get; set; }
-	public Poi[] pois { get; set; }
-	public Discovery[] discoveries { get; set; }
+	public required string[][] terrain { get; set; }
+	public Poi[] pois { get; set; } = [];
+	public Discovery[] discoveries { get; set; } = [];
 }

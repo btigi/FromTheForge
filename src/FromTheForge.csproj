@@ -10,4 +10,10 @@
 	<PropertyGroup>
 		<SourceRevisionId>build$([System.DateTime]::UtcNow.ToString("yyyyMMddHHmmss"))</SourceRevisionId>
 	</PropertyGroup>
+
+	<PropertyGroup>
+		<NoWarn>$(NoWarn);IDE1006</NoWarn>
+		<NoWarn>$(NoWarn);IDE0017</NoWarn>
+		<NoWarn>$(NoWarn);IDE0028</NoWarn>
+	</PropertyGroup>
 </Project>

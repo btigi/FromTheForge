@@ -1,4 +1,4 @@
 ﻿public class CraftingRecipesResponse
 {
-	public CraftingRecipe[] recipes { get; set; }
+	public CraftingRecipe[] recipes { get; set; } = [];
 }

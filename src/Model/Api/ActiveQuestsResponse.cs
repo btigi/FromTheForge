@@ -2,5 +2,5 @@
 {
 	public int activeCount { get; set; }
 	public int maxActive { get; set; }
-	public ActiveQuest[] quests { get; set; }
+	public ActiveQuest[] quests { get; set; } = [];
 }

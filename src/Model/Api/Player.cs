@@ -5,5 +5,5 @@
 	public int mana { get; set; }
 	public int maxMana { get; set; }
 	public int ac { get; set; }
-	public Effect[] effects { get; set; }
+	public Effect[] effects { get; set; } = [];
 }

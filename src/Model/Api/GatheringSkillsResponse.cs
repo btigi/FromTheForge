@@ -1,4 +1,4 @@
 ﻿public class GatheringSkillsResponse
 {
-	public GatheringSkillsDetail skills { get; set; }
+	public GatheringSkillsDetail skills { get; set; } = new GatheringSkillsDetail();
 }

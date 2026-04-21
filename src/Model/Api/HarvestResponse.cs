@@ -9,7 +9,7 @@
 	public int skillXp { get; set; }
 	public int cooldownMinutes { get; set; }
 	public DateTime availableAt { get; set; }
-	public HarvestLevelUp levelUp { get; set; }
+	public HarvestLevelUp levelUp { get; set; } = new HarvestLevelUp();
 
 	public string error { get; set; } = "";
 	public string message { get; set; } = "";

@@ -8,7 +8,7 @@
 	public int currentRoom { get; set; }
 	public int totalRooms { get; set; }
 	public bool completed { get; set; }
-	public DungeonRoom[] rooms { get; set; }
+	public DungeonRoom[] rooms { get; set; } = [];
 
 	public string error { get; set; } = "";
 	public string message { get; set; } = "";

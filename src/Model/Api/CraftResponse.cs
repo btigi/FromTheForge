@@ -7,7 +7,7 @@
 	public string skill { get; set; } = "";
 	public int skillLevel { get; set; }
 	public int skillXp { get; set; }
-	public HarvestLevelUp levelUp { get; set; }
+	public HarvestLevelUp levelUp { get; set; } = new HarvestLevelUp();
 
 	public string error { get; set; } = "";
 	public string message { get; set; } = "";
