@@ -384,9 +384,7 @@ commands["map"] = ("Get world map", async () =>
 		{
 			foreach (var poi in mapResponse.pois.OrderBy(o => o.name))
 			{
-				Console.WriteLine($"{poi.name} [{poi.x},{poi.y}]");
-				Console.WriteLine($"  {poi.description}");
-				Console.WriteLine($"  {poi.category} {poi.type} {poi.level_min}-{poi.level_max}");
+				PrintPointOfInterest(poi);
 			}
 		}
 		else
@@ -420,7 +418,7 @@ commands["regions"] = ("List map regions", async () =>
 		return;
 	}
 	var regionsResponse = await Get<Region[]>(Constants.Regions, token);
-	foreach (var region in regionsResponse)
+	foreach (var region in regionsResponse.OrderBy(o => o.name))
 	{
 		Console.WriteLine($"{region.name} [{region.centerX},{region.centerY}]");
 		Console.WriteLine($"  {region.description}");
@@ -443,9 +441,7 @@ commands["mapdetail"] = ("Cell detail at x,y", async () =>
 	Console.WriteLine(mapDetailResponse.terrain);
 	if (mapDetailResponse.poi != null)
 	{
-		Console.WriteLine($"{mapDetailResponse.poi.name} [{mapDetailResponse.poi.x},{mapDetailResponse.poi.y}]");
-		Console.WriteLine($"  {mapDetailResponse.poi.description}");
-		Console.WriteLine($"  {mapDetailResponse.poi.category} {mapDetailResponse.poi.type} {mapDetailResponse.poi.level_min}-{mapDetailResponse.poi.level_max}");
+		PrintPointOfInterest(mapDetailResponse.poi);
 	}
 }
 );
@@ -1559,7 +1555,23 @@ void PrintDiscovery(Discovery discovery)
 {
 	Console.WriteLine($"{discovery.name} ({discovery.id}) {discovery.terrain} [{discovery.x},{discovery.y}]");
 	Console.WriteLine($"  {discovery.description}");
-	Console.WriteLine($"  {discovery.category} {discovery.type} {discovery.level_min}-{discovery.level_max}");
+	Console.WriteLine($"  {discovery.category} {discovery.type} {GetLevelString(discovery.level_min, discovery.level_max)}");
+}
+
+void PrintPointOfInterest(Poi poi)
+{
+	Console.WriteLine($"{poi.name} [{poi.x},{poi.y}]");
+	Console.WriteLine($"  {poi.description}");
+	Console.WriteLine($"  {poi.category} {poi.type} {GetLevelString(poi.level_min, poi.level_max)}");
+}
+
+string GetLevelString(int? min, int? max)
+{
+	if (min != null && max != null)
+	{
+		return $"{min}-{max}";
+	}
+	return string.Empty;
 }
 
 static DateTime? GetBuildDate(Assembly assembly)
