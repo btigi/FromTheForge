@@ -2,6 +2,8 @@
 
 From The Forge is a simple command-line client for the REST driven RPG [ForgeBound.io](https://www.forgebound.io/).
 
+![example screenshot](resources/screenshot.png)
+
 # Download
 
 Compiled downloads are not available.
