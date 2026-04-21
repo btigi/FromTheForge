@@ -6,7 +6,7 @@ From The Forge is a simple command-line client for the REST driven RPG [ForgeBou
 
 # Download
 
-Compiled downloads are not available.
+Download the [latest release](https://github.com/btigi/FromTheForge/releases/latest)
 
 # Compiling
 
