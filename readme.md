@@ -28,6 +28,8 @@ Run FromTheForge.exe from a command-line, e.g.
 
 `FromTheForge`
 
+Use the `help` command to get a list of all available commands. Consult [ForgeBound.io](https://www.forgebound.io/) for more information.
+
 
 # Licencing
 
